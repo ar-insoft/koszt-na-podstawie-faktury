@@ -1,0 +1,12 @@
+.formElements .ui.label {
+    width: 200px;
+    text-align: right;
+}
+
+.ui.search>.results.transition.visible {
+    width: 46em;
+}
+
+.ui.search>.results .result .content.budzety_result {
+    width: 500px;
+}
