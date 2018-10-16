@@ -3,7 +3,7 @@
 }
 
 #root {
-  background-color: rgb(245, 245, 245) !important;
+  background-color: rgb(245, 245, 245);
 }
 
 .App-logo {
@@ -38,6 +38,6 @@
   text-align: left;
 }
 .ui, .ui.container {
-  background-color: rgb(245, 245, 245) !important;
+  background-color: rgb(245, 245, 245);
 
 }

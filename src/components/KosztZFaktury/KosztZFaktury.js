@@ -6,6 +6,7 @@ import './KosztZFaktury.css'
 import { FakturaPusta } from './FakturaPusta'
 import { KosztyListaTest } from './KosztyListaTest'
 import { Koszty } from './Koszty'
+import ProjektSearch from './ProjektSearch'
 import ZadanieSearch from './ZadanieSearch'
 import BISearch from './BISearch'
 
@@ -193,9 +194,9 @@ class Faktura extends Component {
                             <Form.Input id='form-input-opis' label='Opis' placeholder='Opis'
                                 name="opis"
                             />
+                                <Button color='teal' fluid size='large' loading={isLoading} disabled={isLoading}
+                                    onClick={(evt) => this.handleSave(evt)}>Zapisz</Button>
 
-                            <Button color='teal' fluid size='large' loading={isLoading} disabled={isLoading}
-                                onClick={(evt) => this.handleSave(evt)}>Zapisz</Button>
 
                             Forma płatności	✓	1 	Przelew-gotówka Przedpłata
                             Przedpłata  - rejestracja kosztu, którego jeszcze nie ma, powoduje rezerwację środków (wyświetla wartość na czerwono)
@@ -220,172 +221,90 @@ class Koszt extends Component {
     constructor(props) {
         super(props);
 
-        //this.koszty = this.props.koszty
-        //this.koszty.aktualizujPoleKosztu = this.koszty.aktualizujPoleKosztu.bind(this)
-
         this.state = {
-            projekt: {},
+            //projekt: {},
             isLoading: false,
         }
 
     }
     componentWillMount() {
-        this.resetComponent()
     }
 
     handleChange = (e) => {
         const { name, type } = e.target;
         let { value } = e.target;
-        console.log('name: ' + name + ' value: ' + value)
+        //console.log('name: ' + name + ' value: ' + value)
 
         if (type === "number") {
             value = parseFloat(value)
         }
-        
-        //var koszty = this.props.koszty
-        //this.koszty.aktualizujPoleKosztu(this.props.koszt, { [name]: value });
         this.props.onKosztChange(this.props.koszt, { [name]: value });
     }
-
-    resetComponent = () => this.setState({ isLoading: false, results: [], value: '' })
-
-    //Projekt search
-    handleProjektResultSelect = (e, { result }) => {
-        this.props.onKosztChange(this.props.koszt, { id_zlecenie: result.id });
-        this.setState({ projekt: result, projectSearchEdit: result.title,  })
+    handleCheckboxChange = (e, data) => {
+        console.log('data: ', data)
+        const { name, checked } = data;
+        const value = checked ? 1 : 0
+        this.props.onKosztChange(this.props.koszt, { [name]: value });
     }
-    handleProjektSearchChange = (e, { value }) => {
-        console.log('handleProjektSearchChange')
-        this.setState({ isLoading: true, projectSearchEdit: value })
-
-        setTimeout(() => {
-            console.log('handleProjektSearchChange.setTimeout ' + this.state.projectSearchEdit.length)
-            if (this.state.projectSearchEdit.length < 1) return this.resetComponent()
-
-            const re = new RegExp(_.escapeRegExp(this.state.projectSearchEdit), 'i')
-            const isMatch = result => re.test(result.title)
-
-            this.fetchProjectList(re, isMatch)
-
-            // this.setState({
-            //     isLoading: false,
-            //     projectSearchResults: this.fetchProjectList().slice(1, 3), //_.filter(this.fetchProjectList(), result => 1 === 1).slice(1, 3),
-            // })
-        }, 300)
-    }
-
-    fakeProjectSource = _.times(5, () => ({
-        "surname": "BORATYŃSKI",
-        "object_index": "013N\/0001\/13",
-        "id": 55855,
-        "title": "AMpHOra 013N\/0001\/13",
-        "katedra": "KATEDRA TECHNOLOGII LASEROWYCH, AUTOMATYZACJI I ORGANIZACJI PRODUKCJI W10\/K3"
-    }))
-
-    fetchProjectList = (re, isMatch) => {
-        console.log('fetchProjectList')
-        const url = '/eoffice/budzety_pwr/budzet_pwr_json_endpoint.xml?action=koszty_pwr_szukanie_projektu'
-        fetch(url, {
-            method: 'get',
-            headers: { 'Content-Type': 'application/json', },
-        })
-            .then(response => {
-                if (!response.ok) {
-                    return Promise.reject();
-                }
-                return response.json();
-            })
-            .then(json => {
-                //const projectList = json
-                this.setState({ isLoading: false, projectSearchResults: _.filter(json, isMatch) })
-            })
-
-    }
-    //end Projekt search
-
-
-    //test search
-    handleResultSelect = (e, { result }) => this.setState({ value: result.title })
-    handleSearchChange = (e, { value }) => {
-        this.setState({ isLoading: true, value })
-
-        setTimeout(() => {
-            if (this.state.value.length < 1) return this.resetComponent()
-
-            const re = new RegExp(_.escapeRegExp(this.state.value), 'i')
-            const isMatch = result => re.test(result.title)
-
-            this.setState({
-                isLoading: false,
-                results: _.filter(source, isMatch),
-            })
-        }, 300)
-    }
-    //end test search
-
-            render() {
-                const { isLoading, value, results } = this.state
-                const { projekt, projectSearchEdit, projectSearchResults } = this.state
-                const { koszt } = this.props
-                return (
+          
+    render() {
+        const { isLoading, value, results } = this.state
+        const { projekt, projectSearchEdit, projectSearchResults } = this.state
+        const { koszt } = this.props
+        return (
             <React.Fragment>
-                        Dane kosztu
+                Dane kosztu
             <div className="formElements">
-                            <Form.Group widths='equal'>
-                                <Label>Rezerwacja</Label>
-                                <Checkbox name="rezerwacja" value="1" />
-                                </Form.Group>
-                            <Form.Group widths='equal'>
-                            <Label>Projekt</Label>
-                            <Search
-                                loading={isLoading}
-                                onResultSelect={this.handleProjektResultSelect}
-                                onSearchChange={_.debounce(this.handleProjektSearchChange, 500, { leading: true })}
-                                results={projectSearchResults}
-                                value={projectSearchEdit}
-                                />{koszt.id_zlecenie}
-                            </Form.Group>
-                            <Form.Group widths='equal'>
-                                <Label>Zadanie</Label>
-                                <ZadanieSearch projectId={koszt.id_zlecenie} koszt={koszt} onKosztChange={this.props.onKosztChange} />
-                            </Form.Group>
-                            <Form.Group widths='equal'>
-                                <Label>Koszt BI</Label>
-                                <BISearch koszt={koszt} onKosztChange={this.props.onKosztChange} />
-                            </Form.Group>
-                            <Form.Group widths='equal'>
-                                <Label>Wartość netto</Label>
-                                <Input id='form-input-wartosc_netto' type="number"
-                                    name="real_value" value={koszt.real_value} onChange={this.handleChange}
-                                />
-                            </Form.Group>
-                            <Form.Group widths='equal'>
-                                <Label>Wartość VAT kwalifikowany</Label>
-                                <Input id='form-input-wartosc_vat_kwalfikowany' type="number"
-                                    name="vat_value" value={koszt.vat_value} onChange={this.handleChange}
-                                />
-                            </Form.Group>
-                            <Form.Group widths='equal'>
-                                <Label>Wartość kwalifikowana</Label>
-                                <Input id='form-input-wartosc_kwalfikowana' type="number"
-                                    name="kwota_obciazajaca_budzet" value={koszt.kwota_obciazajaca_budzet} onChange={this.handleChange}
-                                />
-                            </Form.Group>
-                            <Form.Group widths='equal'>
-                                <Label>Opis</Label>
-                                <Input id='form-input-opis' placeholder='Opis'
-                                    name="opis" value={koszt.opis}
-                                />
-                            </Form.Group>
-                            <Button color='teal' fluid size='large' loading={isLoading} disabled={isLoading}
-                                onClick={(evt) => this.props.onKosztSave(koszt)}>Zapisz</Button>
+                    <Form.Group widths='equal'>
+                        <Label>Rezerwacja</Label>
+                        <Checkbox name="rezerwacja" value="1"
+                            checked={koszt.rezerwacja === 1} onChange={this.handleCheckboxChange} />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Projekt</Label>
+                        <ProjektSearch koszt={koszt} onKosztChange={this.props.onKosztChange} />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Zadanie</Label>
+                        <ZadanieSearch projectId={koszt.id_zlecenie} koszt={koszt} onKosztChange={this.props.onKosztChange} />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Koszt BI</Label>
+                        <BISearch koszt={koszt} onKosztChange={this.props.onKosztChange} />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Wartość netto</Label>
+                        <Input id='form-input-wartosc_netto' type="number"
+                            name="real_value" value={koszt.real_value} onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Wartość VAT kwalifikowany</Label>
+                        <Input id='form-input-wartosc_vat_kwalfikowany' type="number"
+                            name="vat_value" value={koszt.vat_value} onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Wartość kwalifikowana</Label>
+                        <Input id='form-input-wartosc_kwalfikowana' type="number"
+                            name="kwota_obciazajaca_budzet" value={koszt.kwota_obciazajaca_budzet} onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Opis</Label>
+                        <Input id='form-input-opis' placeholder='Opis'
+                            name="opis" value={koszt.opis}
+                        />
+                    </Form.Group>
+                    <Button color='teal' fluid size='large' loading={isLoading} disabled={isLoading}
+                        onClick={(evt) => this.props.onKosztSave(koszt)}>Zapisz</Button>
 
-                            {Object.keys(koszt).map(key => key +':'+ koszt[key] + ', ')}
+                    {Object.keys(koszt).map(key => key + ':' + koszt[key] + ', ')}
 
-            </div>
-                    </React.Fragment>
-                    )
-                }
-            }
+                </div>
+            </React.Fragment>
+        )
+    }
+}
             
 export default KosztZFaktury;

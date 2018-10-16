@@ -32,7 +32,6 @@ const resultRenderer = ({ koszt_teta_id, koszt_teta_name }) => (
         {koszt_teta_name && <div className='description'>{koszt_teta_name}</div>}
     </div>
 )
-
 class BISearch extends Component {
     constructor(props) {
         super(props);
@@ -67,7 +66,7 @@ class BISearch extends Component {
 
     render() {
         const { isLoading, value, results } = this.state
-        return(
+        return (
             <Search
                 loading={isLoading}
                 onResultSelect={this.handleResultSelect}

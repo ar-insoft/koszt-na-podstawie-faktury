@@ -7,6 +7,9 @@
     width: 46em;
 }
 
+.ui.search>.results .result .budzety_result>span {
+    margin: 0px 5px;
+}
 .ui.search>.results .result .content.budzety_result {
     width: 500px;
 }

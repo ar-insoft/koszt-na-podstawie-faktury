@@ -45,7 +45,7 @@ class ZadanieSearch extends Component {
                 return response.json();
             })
             .then(json => {
-                this.setState({ isLoading: false, results: json})
+                this.setState({ isLoading: false, results: json })
             })
 
     }
