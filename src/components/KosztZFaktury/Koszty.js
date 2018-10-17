@@ -5,7 +5,8 @@ class Koszty {
 
     wartoscKwalfikowanaSuma = () => {
         console.log('Koszty.wartoscKwalfikowanaSuma', this.listaKosztow)
-        return this.roundUp(this.listaKosztow.reduce((a, b) => a.wartosc_kwalfikowana + b.wartosc_kwalfikowana),2) //.toPrecision(6)
+        return this.listaKosztow.reduce((a, b) => a.kwota_obciazajaca_budzet + b.kwota_obciazajaca_budzet) //.toPrecision(6)
+        //return this.roundUp(this.listaKosztow.reduce((a, b) => a.kwota_obciazajaca_budzet + b.kwota_obciazajaca_budzet), 2)
     }
 
     roundUp = (num, precision) => {
@@ -21,13 +22,20 @@ class Koszty {
     }
 
     dodajNowyKoszt = () => {
-
+        const nowyKoszt = { opis: 'nowy_koszt', rok_budzetowy: 2018, kwota_obciazajaca_budzet: 0.0}
+        let nowyRozmiar = this.listaKosztow.push(nowyKoszt)
+        nowyKoszt.id = - nowyRozmiar
+        return this
     }
 
-    zapiszKoszt = (koszt) => {
+    zapiszKoszt = (koszt, promiseHandler) => {
         var kosztWLiscie = this.listaKosztow.find(el => el.id === koszt.id)
         console.log('Koszty.zapiszKoszt', kosztWLiscie)
-        const kosztJson = JSON.stringify({ ...kosztWLiscie })
+        const kosztDoZapisu = { ...kosztWLiscie }
+        delete kosztDoZapisu.projekt
+        delete kosztDoZapisu.zadanie
+        delete kosztDoZapisu.bi
+        const kosztJson = JSON.stringify(kosztDoZapisu)
 
         fetch('/eoffice/budzety_pwr/budzet_pwr_json_endpoint.xml?action=save_koszt', {
             method: 'POST',
@@ -40,39 +48,17 @@ class Koszty {
                 if (!response.ok) {
                     return Promise.reject();
                 }
-                const kosztZapisany = response.json();
+                return response.json()
+            })
+            .then(json => {
+                const kosztZapisany = json
+                console.log('koszty.zapiszKoszt kosztZapisany', kosztZapisany)
                 Object.assign(kosztWLiscie, kosztZapisany);
-                return kosztZapisany
+
+                promiseHandler(this)
             })
     }
 
-//     function registerNewAccount(user, setNewUser, setError) {
-//     let responseError = false;
-//     fetch('/authentication_provider_impl/register_new_account', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ ...user })
-//     })
-//         .then(response => {
-//             if (!response.ok) {
-//                 responseError = true;
-//                 return response.json();
-//             }
-//             return response.json();
-//         })
-//         .then(json => {
-//             if (responseError) {
-//                 setError(json.error);
-//             } else {
-//                 setNewUser(json);
-//             }
-//             console.log('userService.registerNewAccount.json ', responseError, json);
-//         })
-//         .catch(error => {
-//             console.log('userService.registerNewAccount.catch ', error);
-//         }
-//         );
-// } 
 }
 
 export {Koszty}

@@ -26,27 +26,24 @@ const BiWszystkie = [
     { koszt_teta_id: "12400", koszt_teta_name: "ZAKUPY ŚRODKÓW TRWAŁYCH I WNIP => 3500 ORAZ INWEST" },
     { koszt_teta_id: "12500", koszt_teta_name: "ZAKUPY ŚRODKÓW TRWAŁYCH i WNiP < 3500" },
 ]
-const resultRenderer = ({ koszt_teta_id, koszt_teta_name }) => (
-    <div key='content' className='content'>
-        {koszt_teta_id && <div className='title'>{koszt_teta_id}</div>}
-        {koszt_teta_name && <div className='description'>{koszt_teta_name}</div>}
-    </div>
-)
 class BISearch extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            projekt: {},
             isLoading: false,
         }
 
     }
+    componentDidMount() {
+        if (this.props.koszt.bi && this.state.value !== this.props.koszt.bi.koszt_teta_id)
+            this.setState({ value: this.props.koszt.bi.koszt_teta_id })
+    }
     resetComponent = () => this.setState({ isLoading: false, results: [], value: '' })
 
     handleResultSelect = (e, { result }) => {
-        this.props.onKosztChange(this.props.koszt, { koszt_teta_id: result.koszt_teta_id });
-        this.setState({ bi: result, value: result.koszt_teta_name })
+        this.props.onKosztChange(this.props.koszt, { koszt_teta_id: result.koszt_teta_id, bi: result });
+        this.setState({ bi: result, value: result.koszt_teta_id })
     }
     handleSearchChange = (e, { value }) => {
         this.setState({ isLoading: true, value })
@@ -78,5 +75,11 @@ class BISearch extends Component {
         )
     }
 }
+const resultRenderer = ({ koszt_teta_id, koszt_teta_name }) => (
+    <div key='content' className='content'>
+        {koszt_teta_id && <div className='title'>{koszt_teta_id}</div>}
+        {koszt_teta_name && <div className='description'>{koszt_teta_name}</div>}
+    </div>
+)
 
 export default BISearch

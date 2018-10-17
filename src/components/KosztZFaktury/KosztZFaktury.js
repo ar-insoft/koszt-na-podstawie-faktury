@@ -1,19 +1,15 @@
 import React, { Component } from 'react'
-import { Form, Input, Checkbox, Button, Grid, Container, Header, Label, Search, Tab } from 'semantic-ui-react'
-import _ from 'lodash'
-import faker from 'faker'
+import { Form, Input, Checkbox, Radio, Button, Grid, Container, Header, Label, Tab } from 'semantic-ui-react'
 import './KosztZFaktury.css'
 import { FakturaPusta } from './FakturaPusta'
 import { KosztyListaTest } from './KosztyListaTest'
 import { Koszty } from './Koszty'
+import { Faktura } from './Faktura'
+import FirmaSearch from './FirmaSearch'
 import ProjektSearch from './ProjektSearch'
 import ZadanieSearch from './ZadanieSearch'
 import BISearch from './BISearch'
 
-const source = _.times(5, () => ({
-    title: faker.company.companyName(),
-    description: faker.company.catchPhrase(),
-}))
 class KosztZFaktury extends Component {
     constructor(props) {
         super(props);
@@ -35,7 +31,8 @@ class KosztZFaktury extends Component {
         {
             menuItem: 'Faktura', render: () =>
                 <Tab.Pane>
-                    <Faktura isLoading={this.state.isLoading} faktura={this.state.faktura} onFakturaChange={this.handleFakturaChange}
+                    <FakturaForm isLoading={this.state.isLoading} faktura={this.state.faktura} onFakturaChange={this.handleFakturaChange}
+                        onFakturaSave={this.handleFakturaSave}
                     />
                 </Tab.Pane>
         },
@@ -43,8 +40,8 @@ class KosztZFaktury extends Component {
                 Object.assign({ menuItem: koszt.opis }, {
                     render: () =>
                         <Tab.Pane>
-                            <Koszt koszt={koszt} koszty={this.state.koszty} onKosztChange={this.handleKosztChange}
-                            onKosztSave={this.handleKosztSave}
+                            <Koszt key={koszt.id} koszt={koszt} koszty={this.state.koszty} onKosztChange={this.handleKosztChange}
+                                onKosztSave={this.handleKosztSave}
                             />
                         </Tab.Pane> }
                 ))
@@ -67,12 +64,21 @@ class KosztZFaktury extends Component {
     }
 
     handleKosztSave = (koszt) => {
-        this.state.koszty.zapiszKoszt(koszt)
-            .then(kosztZapisany => {
-                //this.setState({ isLoading: false, results: json })
+        this.state.koszty.zapiszKoszt(koszt, koszty => {
+                this.setState({ koszty });
             })
     }
 
+    handleFakturaSave = (faktura) => {
+        Faktura.save(faktura, fakturaZapisana => {
+            this.setState({ faktura: fakturaZapisana });
+        })
+    }
+
+    nowyKoszt = () => {
+        let koszty = this.state.koszty.dodajNowyKoszt()
+        this.setState({ koszty });
+    }
     handleChange(e) {
         const { name, value } = e.target;
         this.setState({ [name]: value });
@@ -96,38 +102,40 @@ class KosztZFaktury extends Component {
                                 </Form.Field>
                                 <Form.Field inline>
                                     <Label pointing='right'>Rozliczono</Label>
-                                    <Input id='form-input-faktura_rozliczono' 
+                                    <Input id='form-input-faktura_rozliczono'
                                         name="faktura_rozliczono" value={this.state.koszty.wartoscKwalfikowanaSuma()}
                                     />
                                 </Form.Field>
                                 <Form.Field inline>
-                                    <Input id='form-input-faktura_pozostalo' label='Pozostało' 
+                                    <Input id='form-input-faktura_pozostalo' label='Pozostało'
                                         name="faktura_pozostalo" value={faktura.wartosc_kwalfikowana - this.state.koszty.wartoscKwalfikowanaSuma()}
                                     />
                                 </Form.Field>
                             </Grid.Column>
                             <Grid.Column>
                                 {
-                                    this.state.koszty.listaKosztow.map(koszt => 
+                                    this.state.koszty.listaKosztow.map(koszt =>
                                         <Form.Field inline key={koszt.id}>
                                             <Label pointing='right'>{koszt.opis}</Label>
-                                            <Label >{koszt.wartosc_kwalfikowana}</Label>
+                                            <Label >{koszt.kwota_obciazajaca_budzet}</Label>
                                         </Form.Field>
                                     )
                                 }
+                                <Button color='teal'
+                                    onClick={(evt) => this.nowyKoszt()}>Nowy koszt</Button>
                             </Grid.Column>
-    </Grid.Row>
-    </Grid>
+                        </Grid.Row>
+                    </Grid>
 
-                            <Tab panes={this.tabs()} />
+                    <Tab panes={this.tabs()} />
                 </Form>
             </Container>
-                    )
+        )
+
+    }
+}
             
-                }
-            }
-            
-class Faktura extends Component {
+class FakturaForm extends Component {
                         constructor(props) {
                     super(props);
                     this.handleFakturaChange = props.onFakturaChange;
@@ -140,82 +148,93 @@ class Faktura extends Component {
     handleChange(e) {
         const {name, value } = e.target;
                     console.log('name: ' + name + ' value: ' + value)
-        this.handleFakturaChange({[name]: value });
-                }
+        this.props.onFakturaChange({[name]: value });
+    }
+    handleRadioChange = (e, { value, name }) => this.props.onFakturaChange({ [name]: value })
             
     render() {
         const {isLoading, faktura } = this.props
-                    return (
+        return (
             <React.Fragment>
                         Dane faktury
             <div className="formElements">
-                            <Form.Group widths='equal'>
-                                <label>Forma płatności</label>
-                                <Form.Radio label='Przelew-gotówka' name='forma_platnosci' value='1'
-                                    checked={faktura.forma_platnosci === '1'} onChange={this.handleChange}
-                                />
-                                <Form.Radio label='Przedpłata' name='forma_platnosci' value='2'
-                                    checked={faktura.forma_platnosci === '2'} onChange={this.handleChange}
-                                />
-                                {/*  
-                        <Form.Field>
-                        </Form.Field>
-                        <Form.Field>
-                        </Form.Field>
-                        checked={this.state.value === 'that'} onChange={this.handleChange} */}
-                            </Form.Group>
-                            <Form.Input id='form-input-firma' label='Firma' placeholder='Firma'
-                                name="firma"
-                            />
-                            <Form.Input id='form-input-nr_faktury' label='Nr faktury' placeholder='Nr faktury'
-                                name="nr_faktury" value={faktura.nr_faktury} onChange={this.handleChange}
-                            />
-                            <Form.Input id='form-input-data_wystawienia' label='Data wystawienia' placeholder='Data wystawienia'
-                                name="data_wystawienia"
-                            />
-                            <Form.Input id='form-input-przedmiot' label='Przedmiot' placeholder='Przedmiot'
-                                name="przedmiot"
-                            />
-                            <Form.Input id='form-input-wartosc_netto' label='Wartość netto' placeholder='Wartość netto'
-                                name="wartosc_netto"
-                            />
-                            <Form.Input id='form-input-wartosc_brutto' label='Wartość brutto' placeholder='Wartość brutto'
-                                name="wartosc_brutto"
-                            />
-                            <Form.Input id='form-input-wartosc_kwalfikowana' label='Wartość kwalifikowana' placeholder='Wartość kwalifikowana'
-                                name="wartosc_kwalfikowana" value={faktura.wartosc_kwalfikowana} onChange={this.handleChange}
-                            />
-                            <Form.Input id='form-input-nr_wdr' label='Nr WRD' placeholder='Nr WRD'
-                                name="nr_wdr"
-                            />
-                            <Form.Input id='form-input-nr_zamowienia' label='Nr zamówienia' placeholder='Nr zamówienia'
-                                name="nr_zamowienia"
-                            />
-                            <Form.Input id='form-input-opis' label='Opis' placeholder='Opis'
-                                name="opis"
-                            />
-                                <Button color='teal' fluid size='large' loading={isLoading} disabled={isLoading}
-                                    onClick={(evt) => this.handleSave(evt)}>Zapisz</Button>
+                    <Form.Group widths='equal'>
+                        <Label>Forma płatności</Label>
+                        <Radio label='Przelew-gotówka' name='forma_platnosci' value='1'
+                            checked={faktura.forma_platnosci === '1'} onChange={this.handleRadioChange}
+                        />
+                        <Radio label='Przedpłata' name='forma_platnosci' value='2'
+                            checked={faktura.forma_platnosci === '2'} onChange={this.handleRadioChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Firma</Label>
+                        <FirmaSearch faktura={faktura} onChange={this.props.onFakturaChange} />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Nr faktury</Label>
+                        <Input id='form-input-nr_faktury' placeholder='Nr faktury'
+                            name="nr_faktury" value={faktura.nr_faktury} onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Data wystawienia</Label>
+                        <Input id='form-input-data_wystawienia' type='date'
+                            name="data_wystawienia" value={faktura.data_wystawienia} onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Przedmiot</Label>
+                        <Input id='form-input-przedmiot' placeholder='Przedmiot'
+                            name="przedmiot" value={faktura.przedmiot} onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Wartość netto</Label>
+                        <Input id='form-input-wartosc_netto' type='number'
+                            name="wartosc_netto" value={faktura.wartosc_netto} onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Wartość brutto</Label>
+                        <Input id='form-input-wartosc_brutto' type='number'
+                            name="wartosc_brutto" value={faktura.wartosc_brutto} onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Wartość kwalifikowana</Label>
+                        <Input id='form-input-wartosc_kwalfikowana' type='number'
+                            name="wartosc_kwalfikowana" value={faktura.wartosc_kwalfikowana} onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Nr WRD</Label>
+                        <Input id='form-input-nr_wrd' placeholder='Nr WRD'
+                            name="nr_wrd" onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Nr zamówienia</Label>
+                        <Input id='form-input-nr_zamowienia' placeholder='Nr zamówienia'
+                            name="nr_zamowienia" onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Label>Opis</Label>
+                        <Input id='form-input-opis' placeholder='Opis'
+                            name="opis" value={faktura.opis} onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Button color='teal' fluid size='large' loading={isLoading} disabled={isLoading}
+                        onClick={(evt) => this.props.onFakturaSave(faktura)}>Zapisz</Button>
 
-
-                            Forma płatności	✓	1 	Przelew-gotówka Przedpłata
-                            Przedpłata  - rejestracja kosztu, którego jeszcze nie ma, powoduje rezerwację środków (wyświetla wartość na czerwono)
-                            Firma	✓	2
-                            Nr faktury	✓	3	Nie wymagane dla formy: przedpłata
-                            Data wystawienia	✓	4
-                            Przedmiot	✓	5
-                            Wartość netto	✓	6
-                            Wartość brutto	✓	7
-                            Wartość kwalifikowana	✓	8	Wartość do rozpisania na koszty
-                            Nr WRD	✓	9	Pole kluczowe - unikalne
-                            Nr zamówienia	-	10
-                            Opis, dotyczy
+                    {Object.keys(faktura).map(key => key + ':' + faktura[key] + ', ')}
+                </div>
+            </React.Fragment>
+        )
+    }
         
-            </div>
-                    </React.Fragment>
-                    )
-                }
-            }
+}
             
 class Koszt extends Component {
     constructor(props) {
@@ -248,8 +267,7 @@ class Koszt extends Component {
     }
           
     render() {
-        const { isLoading, value, results } = this.state
-        const { projekt, projectSearchEdit, projectSearchResults } = this.state
+        const { isLoading } = this.state
         const { koszt } = this.props
         return (
             <React.Fragment>
@@ -293,7 +311,7 @@ class Koszt extends Component {
                     <Form.Group widths='equal'>
                         <Label>Opis</Label>
                         <Input id='form-input-opis' placeholder='Opis'
-                            name="opis" value={koszt.opis}
+                            name="opis" value={koszt.opis} onChange={this.handleChange}
                         />
                     </Form.Group>
                     <Button color='teal' fluid size='large' loading={isLoading} disabled={isLoading}

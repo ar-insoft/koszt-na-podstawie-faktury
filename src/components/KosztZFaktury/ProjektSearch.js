@@ -6,13 +6,19 @@ class ProjektSearch extends Component {
     constructor(props) {
         super(props);
 
+        let value = props.projekt ? props.projekt.object_index : ''
         this.state = {
-            projekt: {},
             isLoading: false,
+            value,
         }
 
     }
-    resetComponent = () => this.setState({ isLoading: false, results: [], value: '' })
+    componentDidMount() {
+        //console.log('ProjektSearch.componentDidMount', this.props.koszt.projekt)
+        if (this.props.koszt.projekt && this.state.value !== this.props.koszt.projekt.object_index)
+            this.setState({ value: this.props.koszt.projekt.object_index})
+    }
+    //resetComponent = () => this.setState({ isLoading: false, results: [], value: '' })
     handleResultSelect = (e, { result }) => {
         this.props.onKosztChange(this.props.koszt, { id_zlecenie: result.id, projekt: result });
         this.setState({ value: result.object_index + ' ' + result.object_external_index })
@@ -74,10 +80,10 @@ class ProjektSearch extends Component {
 
     fakeProjectSource = _.times(5, () => ({
         "surname": "BORATYŃSKI",
-        "object_index": "013N\/0001\/13",
+        "object_index": "013N/0001/13",
         "id": 55855,
-        "title": "AMpHOra 013N\/0001\/13",
-        "katedra": "KATEDRA TECHNOLOGII LASEROWYCH, AUTOMATYZACJI I ORGANIZACJI PRODUKCJI W10\/K3"
+        "title": "AMpHOra 013N/0001/13",
+        "katedra": "KATEDRA TECHNOLOGII LASEROWYCH, AUTOMATYZACJI I ORGANIZACJI PRODUKCJI W10/K3"
     }))
 
     fetchProjectList = (re, isMatch) => {
@@ -103,6 +109,8 @@ class ProjektSearch extends Component {
     render() {
         const { isLoading, value, results } = this.state
         return (
+            <React.Fragment>
+
             <Search
                 loading={isLoading}
                 onResultSelect={this.handleResultSelect}
@@ -110,7 +118,9 @@ class ProjektSearch extends Component {
                 results={results}
                 value={value}
                 resultRenderer={resultRenderer}
-            />
+                />
+                {this.props.projekt && this.props.projekt.title}
+                </React.Fragment>
         )
     }
 }

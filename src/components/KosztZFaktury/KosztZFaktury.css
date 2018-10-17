@@ -1,12 +1,15 @@
 .formElements .ui.label {
     width: 200px;
     text-align: right;
+    font-size: 1em;
+}
+.formElements .ui.radio {
+    margin: 0px 10px;
 }
 
 .ui.search>.results.transition.visible {
     width: 46em;
 }
-
 .ui.search>.results .result .budzety_result>span {
     margin: 0px 5px;
 }
