@@ -6,6 +6,14 @@
 .formElements .ui.radio {
     margin: 0px 10px;
 }
+.ui.input.waluta input {
+    text-align: right;
+}
+
+.ui.form input.currency {
+    text-align: right;
+    width: 200px;
+}
 
 .ui.search>.results.transition.visible {
     width: 46em;

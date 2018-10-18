@@ -27,6 +27,26 @@ class Faktura {
                 promiseHandler(faktura)
             })
     }
+
+    static isPoprawnaDoZapisu(faktura) {
+        let valid = true
+        const wypelnonaWartoscKwalfikowana = !isNaN(faktura.wartosc_kwalfikowana) && faktura.wartosc_kwalfikowana > 0
+        valid = valid && wypelnonaWartoscKwalfikowana
+        return valid
+    }
+
+    static isFakturaZapisana(faktura) {
+
+        return faktura.id > 0
+    }
+
+    static fakturaPozostaloDoRozliczenia(doRozliczenia, rozliczono) {
+        if (isNaN(doRozliczenia) || isNaN(rozliczono)) return ''
+        let pozostalo = doRozliczenia - rozliczono
+        return pozostalo.toFixed(2)
+        //const cyfrCalkowitych = Math.round(pozostalo).toString().length
+        //return pozostalo.toPrecision(cyfrCalkowitych + 2)
+    }
 }
 
 export { Faktura }

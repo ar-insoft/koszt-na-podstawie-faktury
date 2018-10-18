@@ -33,7 +33,6 @@ class BISearch extends Component {
         this.state = {
             isLoading: false,
         }
-
     }
     componentDidMount() {
         if (this.props.koszt.bi && this.state.value !== this.props.koszt.bi.koszt_teta_id)

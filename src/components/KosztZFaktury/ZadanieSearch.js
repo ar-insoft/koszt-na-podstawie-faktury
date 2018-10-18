@@ -13,14 +13,14 @@ class ZadanieSearch extends Component {
 
     }
     componentDidMount() {
-        if (this.props.koszt.zadanie && this.state.value !== this.props.koszt.zadanie.id)
-            this.setState({ value: this.props.koszt.zadanie.id })
+        if (this.props.koszt.zadanie && this.state.value !== this.props.koszt.zadanie.numer)
+            this.setState({ value: this.props.koszt.zadanie.numer })
     }
     resetComponent = () => this.setState({ isLoading: false, results: [], value: '' })
 
     handleResultSelect = (e, { result }) => {
         this.props.onKosztChange(this.props.koszt, { koszt_teta_parent_id: result.id, zadanie: result });
-        this.setState({ zadanie: result, value: result.value })
+        this.setState({ zadanie: result, value: result.numer })
     }
     handleSearchChange = (e, { value }) => {
         this.setState({ isLoading: true, value })
@@ -68,10 +68,10 @@ class ZadanieSearch extends Component {
         )
     }
 }
-const resultRenderer = ({ id, value }) => (
+const resultRenderer = ({ id, numer, nazwa }) => (
     <div className='content budzety_result' key={id}>
-        {id && <span className='title'>{id}</span>}
-        {value && <span className='description'>{value}</span>}
+        {numer && <span className='title'>{numer}</span>}
+        {nazwa && <span className='description'>{nazwa}</span>}
     </div>
 )
 

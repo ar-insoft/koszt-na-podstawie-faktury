@@ -9,16 +9,17 @@ import FirmaSearch from './FirmaSearch'
 import ProjektSearch from './ProjektSearch'
 import ZadanieSearch from './ZadanieSearch'
 import BISearch from './BISearch'
+import { InputCurrency } from './InputCurrency'
 
 class KosztZFaktury extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            faktura: FakturaPusta, //{}
-            koszty: new Koszty(KosztyListaTest), //[]
+            faktura: { id: -1, }, //FakturaPusta, // 
+            koszty: new Koszty([]), // KosztyListaTest
             isLoading: false,
-
+            tabActiveIndex: 0,
         }
     }
 
@@ -46,10 +47,10 @@ class KosztZFaktury extends Component {
                         </Tab.Pane> }
                 ))
             ,
-        {
-            menuItem: 'dodaj nowy koszt...', render: () =>
-                <Tab.Pane>nowy koszt</Tab.Pane>
-        },
+        // {
+        //     menuItem: 'dodaj nowy koszt...', render: () =>
+        //         <Tab.Pane>nowy koszt</Tab.Pane>
+        // },
     ]
 
     handleFakturaChange = (changes) => {
@@ -76,13 +77,14 @@ class KosztZFaktury extends Component {
     }
 
     nowyKoszt = () => {
-        let koszty = this.state.koszty.dodajNowyKoszt()
-        this.setState({ koszty });
+        let koszty = this.state.koszty.dodajNowyKoszt(this.state.faktura)
+        this.setState({ koszty, tabActiveIndex: this.state.koszty.listaKosztow.length });
     }
     handleChange(e) {
         const { name, value } = e.target;
         this.setState({ [name]: value });
     }
+    handleTabChange = (e, { activeIndex }) => this.setState({ tabActiveIndex: activeIndex })
 
     render() {
         const { faktura } = this.state;
@@ -96,19 +98,19 @@ class KosztZFaktury extends Component {
                             <Grid.Column textAlign='right'>
                                 <Form.Field inline>
                                     <Label pointing='right'>Wartość kwalifikowana</Label>
-                                    <Input id='form-input-wartosc_kwalfikowana' placeholder='Wartość kwalifikowana'
-                                        name="wartosc_kwalfikowana" value={faktura.wartosc_kwalfikowana}
+                                    <Input id='form-input-wartosc_kwalfikowana' placeholder='Wartość kwalifikowana' className='waluta'
+                                        name="wartosc_kwalfikowana" value={faktura.wartosc_kwalfikowana} input="readonly='1'"
                                     />
                                 </Form.Field>
                                 <Form.Field inline>
                                     <Label pointing='right'>Rozliczono</Label>
-                                    <Input id='form-input-faktura_rozliczono'
+                                    <Input id='form-input-faktura_rozliczono' className='waluta' input="readonly='1'"
                                         name="faktura_rozliczono" value={this.state.koszty.wartoscKwalfikowanaSuma()}
                                     />
                                 </Form.Field>
                                 <Form.Field inline>
-                                    <Input id='form-input-faktura_pozostalo' label='Pozostało'
-                                        name="faktura_pozostalo" value={faktura.wartosc_kwalfikowana - this.state.koszty.wartoscKwalfikowanaSuma()}
+                                    <Input id='form-input-faktura_pozostalo' label='Pozostało' className='waluta' input="readonly='1'"
+                                        name="faktura_pozostalo" value={Faktura.fakturaPozostaloDoRozliczenia(faktura.wartosc_kwalfikowana, this.state.koszty.wartoscKwalfikowanaSuma())}
                                     />
                                 </Form.Field>
                             </Grid.Column>
@@ -121,13 +123,14 @@ class KosztZFaktury extends Component {
                                         </Form.Field>
                                     )
                                 }
-                                <Button color='teal'
+                                <Button color='teal' disabled={!Faktura.isFakturaZapisana(faktura)}
                                     onClick={(evt) => this.nowyKoszt()}>Nowy koszt</Button>
                             </Grid.Column>
+                            {/*  disabled={!Faktura.isFakturaZapisana(faktura)} */}
                         </Grid.Row>
                     </Grid>
 
-                    <Tab panes={this.tabs()} />
+                    <Tab panes={this.tabs()} activeIndex={this.state.tabActiveIndex} onTabChange={this.handleTabChange} />
                 </Form>
             </Container>
         )
@@ -200,10 +203,12 @@ class FakturaForm extends Component {
                         <Input id='form-input-wartosc_brutto' type='number'
                             name="wartosc_brutto" value={faktura.wartosc_brutto} onChange={this.handleChange}
                         />
+                        <InputCurrency name="wartosc_brutto" value={faktura.wartosc_brutto} onChange={this.props.onFakturaChange} />
+
                     </Form.Group>
                     <Form.Group widths='equal'>
                         <Label>Wartość kwalifikowana</Label>
-                        <Input id='form-input-wartosc_kwalfikowana' type='number'
+                        <Input id='form-input-wartosc_kwalfikowana' type='number' min="0.01" step="0.01"
                             name="wartosc_kwalfikowana" value={faktura.wartosc_kwalfikowana} onChange={this.handleChange}
                         />
                     </Form.Group>
@@ -225,10 +230,10 @@ class FakturaForm extends Component {
                             name="opis" value={faktura.opis} onChange={this.handleChange}
                         />
                     </Form.Group>
-                    <Button color='teal' fluid size='large' loading={isLoading} disabled={isLoading}
+                    <Button color='teal' fluid size='large' loading={isLoading} disabled={isLoading || !Faktura.isPoprawnaDoZapisu(faktura)}
                         onClick={(evt) => this.props.onFakturaSave(faktura)}>Zapisz</Button>
 
-                    {Object.keys(faktura).map(key => key + ':' + faktura[key] + ', ')}
+                    {/* {Object.keys(faktura).map(key => key + ':' + faktura[key] + ', ')} {Faktura.isPoprawnaDoZapisu(faktura).toString()} */}
                 </div>
             </React.Fragment>
         )
@@ -317,7 +322,7 @@ class Koszt extends Component {
                     <Button color='teal' fluid size='large' loading={isLoading} disabled={isLoading}
                         onClick={(evt) => this.props.onKosztSave(koszt)}>Zapisz</Button>
 
-                    {Object.keys(koszt).map(key => key + ':' + koszt[key] + ', ')}
+                    {/* {Object.keys(koszt).map(key => key + ':' + koszt[key] + ', ')} */}
 
                 </div>
             </React.Fragment>

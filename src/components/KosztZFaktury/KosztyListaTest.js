@@ -11,4 +11,10 @@ export const KosztyListaTest = [
         kwota_obciazajaca_budzet: 23.45,
         rok_budzetowy: 2018,
     },
+    {
+        id: -3,
+        opis: 'koszt test 3',
+        kwota_obciazajaca_budzet: 11.12,
+        rok_budzetowy: 2018,
+    },
 ]

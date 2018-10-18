@@ -5,13 +5,15 @@ class Koszty {
 
     wartoscKwalfikowanaSuma = () => {
         console.log('Koszty.wartoscKwalfikowanaSuma', this.listaKosztow)
-        return this.listaKosztow.reduce((a, b) => a.kwota_obciazajaca_budzet + b.kwota_obciazajaca_budzet) //.toPrecision(6)
-        //return this.roundUp(this.listaKosztow.reduce((a, b) => a.kwota_obciazajaca_budzet + b.kwota_obciazajaca_budzet), 2)
-    }
-
-    roundUp = (num, precision) => {
-    precision = Math.pow(10, precision)
-    return Math.ceil(num * precision) / precision
+        let sum = 0
+        this.listaKosztow.forEach(element => {
+            console.log('el: ' + element.kwota_obciazajaca_budzet + ' ' + isNaN(element.kwota_obciazajaca_budzet))
+            sum += element.kwota_obciazajaca_budzet
+        });
+        let suma = this.listaKosztow.reduce((a, b) => a.kwota_obciazajaca_budzet + b.kwota_obciazajaca_budzet, 0)
+        console.log('Koszty.wartoscKwalfikowanaSuma ' + suma + ' ' + isNaN(suma) + ' ' + sum + ' ' + isNaN(sum) + ' ' + (typeof sum))
+        //return this.listaKosztow.reduce((a, b) => a.kwota_obciazajaca_budzet + b.kwota_obciazajaca_budzet) //.toFixed(2)
+        return sum.toFixed(2)
     }
 
     aktualizujPoleKosztu = (koszt, changes) => {
@@ -21,8 +23,8 @@ class Koszty {
         return this
     }
 
-    dodajNowyKoszt = () => {
-        const nowyKoszt = { opis: 'nowy_koszt', rok_budzetowy: 2018, kwota_obciazajaca_budzet: 0.0}
+    dodajNowyKoszt = (faktura) => {
+        const nowyKoszt = { opis: 'nowy_koszt', rok_budzetowy: 2018, kwota_obciazajaca_budzet: 0.0, faktura_id: faktura.id }
         let nowyRozmiar = this.listaKosztow.push(nowyKoszt)
         nowyKoszt.id = - nowyRozmiar
         return this

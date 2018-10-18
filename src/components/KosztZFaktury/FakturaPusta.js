@@ -1,3 +1,5 @@
 export const FakturaPusta = {
-    wartosc_kwalfikowana: '123.56',
+    id: -1,
+    wartosc_kwalfikowana: 123.56,
+    wartosc_brutto: 15.34,
 }
