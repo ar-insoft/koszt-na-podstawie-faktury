@@ -1,30 +1,24 @@
 import React, { Component } from 'react'
 
-const currencyFormatter = new Intl.NumberFormat('pl-PL', {
-    style: 'currency',
-    currency: 'PLN'
-});
-
 function removeCommaAndWhitespace(value) {
     let result = value.trim().replace(/,/g, '.').replace(/\s+/g, '');
     return result;
 }
 
-function convertStringToNumber(value) {
-    let result = removeCommaAndWhitespace(value);
-    return parseFloat(result).toFixed(2);
-}
-
 function convertNumberToFormattedString(value) {
+    if (isNaN(value)) return ''
+    if (typeof (value) === 'number') return value.toFixed(2)
     let result = removeCommaAndWhitespace(value);
-    return currencyFormatter.format(result);
+    return parseFloat(result).toFixed(2)
 }
-
 class InputCurrency extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            value: props.value
+            value: props.value,
+            editTimeValue: props.value,
+            value: props.value,
+            edited: false,
         }
         this.currencyRegEx = /^-?\d+(\.|\,)?\d{0,2}$/;
     }
@@ -35,52 +29,55 @@ class InputCurrency extends React.Component {
         })
     }
 
-    handleInput = (evt) => {
-        const value = evt.target.value.trim();
+    onChange = (evt) => {
+        console.log('onChange ' + this.state.edited + ' ' + typeof (this.state.edited))
+        const value = evt.target.value;
         const isValidInput = value === '' || value === '-' || this.currencyRegEx.test(value);
-        const { name } = this.props
-        console.log('isValidInput', isValidInput, value, name);
 
         if (isValidInput) {
-            this.props.onChange({ [name]: value })
-            //this.setState({ value });
+            //this.props.onChange({ [name]: value })
+            this.setState({ editTimeValue: value })
         }
     }
 
-    handleFocus(evt) {
-        const value = evt.target.value;
-        const parsedValue = convertStringToNumber(value);
-        console.log('focus', value, ' -> ', parsedValue);
-
-        if (value === '') {
-            this.setState({ value: value });
-        }
-        else if (!Number.isNaN(parsedValue)) {
-            this.setState({ value: parsedValue });
-        }
+    onFocus = (evt) => {
+        this.setState({ editTimeValue: evt.target.value, edited: true, })
     }
 
-    handleBlur(evt) {
+    onBlur = (evt) => {
+        const { name } = this.props
         const value = evt.target.value;
-        const formattedValue = convertNumberToFormattedString(value);
-        console.log('blur', value, ' -> ', formattedValue);
 
-        if (value === '' || value === '-') {
-            this.setState({ value: '' });
-        }
-        else {
-            this.setState({ value: formattedValue });
+        this.props.onChange({ [name]: this.convertToNumber(value) })
+        this.setState({ edited: false, })
+    }
+
+    convertToNumber = (value) => {
+        //console.log('convertToNumber ' + typeof (value))
+        if (typeof (value) === 'number') return value
+        let result = removeCommaAndWhitespace(value)
+        return parseFloat(result)
+    }
+
+    formatedValue = () => {
+        console.log('formatedValue ' + this.state.edited + ' ' + typeof (this.state.edited))
+        if (this.state.edited) {
+            return this.state.editTimeValue
+        } else {
+            return convertNumberToFormattedString(this.props.value)
         }
     }
 
     render() {
+        const { name, onChange, value, calculated, ...restProps } = this.props;
         return (
             <React.Fragment>
-            <input type="text" className="currency"
-                onInput={this.handleInput.bind(this)}
-                onBlur={this.handleBlur.bind(this)}
-                onFocus={this.handleFocus.bind(this)}
-                    value={this.props.value} />
+                <input type="text" name={name}
+                    onFocus={this.onFocus}
+                    onBlur={this.onBlur}
+                    onChange={this.onChange}
+                    value={this.formatedValue()} {...restProps} />
+                //{convertNumberToFormattedString(this.props.value)} {this.setState.edited?'[1]':'[0]'}
             </React.Fragment>
         )
     }

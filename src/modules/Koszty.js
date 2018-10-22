@@ -4,15 +4,17 @@ class Koszty {
     }
 
     wartoscKwalfikowanaSuma = () => {
-        console.log('Koszty.wartoscKwalfikowanaSuma', this.listaKosztow)
-        let sum = 0
+        //console.log('Koszty.wartoscKwalfikowanaSuma', this.listaKosztow)
+        let sum = parseFloat(0)
         this.listaKosztow.forEach(element => {
             console.log('el: ' + element.kwota_obciazajaca_budzet + ' ' + isNaN(element.kwota_obciazajaca_budzet))
-            sum += element.kwota_obciazajaca_budzet
+            sum += parseFloat(element.kwota_obciazajaca_budzet)
         });
         let suma = this.listaKosztow.reduce((a, b) => a.kwota_obciazajaca_budzet + b.kwota_obciazajaca_budzet, 0)
-        console.log('Koszty.wartoscKwalfikowanaSuma ' + suma + ' ' + isNaN(suma) + ' ' + sum + ' ' + isNaN(sum) + ' ' + (typeof sum))
+        //console.log('Koszty.wartoscKwalfikowanaSuma ' + suma + ' ' + isNaN(suma) + ' ' + sum + ' ' + isNaN(sum) + ' ' + (typeof sum))
         //return this.listaKosztow.reduce((a, b) => a.kwota_obciazajaca_budzet + b.kwota_obciazajaca_budzet) //.toFixed(2)
+        if (isNaN(sum)) return sum
+        //console.log('Koszty.wartoscKwalfikowanaSuma '+typeof(sum),sum)
         return sum.toFixed(2)
     }
 
@@ -24,7 +26,7 @@ class Koszty {
     }
 
     dodajNowyKoszt = (faktura) => {
-        const nowyKoszt = { opis: 'nowy_koszt', rok_budzetowy: 2018, kwota_obciazajaca_budzet: 0.0, faktura_id: faktura.id }
+        const nowyKoszt = { opis: 'nowy_koszt', rok_budzetowy: 2018, kwota_obciazajaca_budzet: 0.0, faktura_id: faktura.id, grupa_id: 1, }
         let nowyRozmiar = this.listaKosztow.push(nowyKoszt)
         nowyKoszt.id = - nowyRozmiar
         return this

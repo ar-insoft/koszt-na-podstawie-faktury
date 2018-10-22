@@ -1,5 +1,3 @@
-
-
 class Faktura {
     static save(faktura, promiseHandler) {
         const fakturaDoZapisu = { ...faktura }
