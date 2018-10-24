@@ -42,7 +42,7 @@ class BISearch extends Component {
 
     handleResultSelect = (e, { result }) => {
         this.props.onKosztChange(this.props.koszt, { koszt_teta_id: result.id, bi: result });
-        this.setState({ bi: result, value: result.id })
+        this.setState({ bi: result, value: result.numer })
     }
     handleSearchChange = (e, { value }) => {
         if(!(this.props.koszt.koszt_teta_parent_id > 0)) return

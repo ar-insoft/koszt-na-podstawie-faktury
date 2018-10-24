@@ -81,8 +81,8 @@ class FakturaForm extends Component {
                         <Input id='form-input-wartosc_brutto' type='number'
                             name="wartosc_brutto" value={faktura.wartosc_brutto} onChange={this.handleChange}
                         />
-                        <InputCurrency name="wartosc_brutto" value={faktura.wartosc_brutto} onChange={this.props.onFakturaChange}
-                            className="currency" />
+                        {/* <InputCurrency name="wartosc_brutto" value={faktura.wartosc_brutto} onChange={this.props.onFakturaChange}
+                            className="currency" /> */}
 
                     </Form.Group>
                     <Form.Group widths='equal'>

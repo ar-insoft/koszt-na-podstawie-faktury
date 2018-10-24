@@ -22,7 +22,26 @@ class Koszty {
         console.log('Koszty.aktualizujPoleKosztu', this, changes)
         var kosztWLiscie = this.listaKosztow.find(el => el.id === koszt.id)
         Object.assign(kosztWLiscie, changes);
+        this.obserwujZmiany(kosztWLiscie, changes)
         return this
+    }
+
+    obserwujZmiany = (koszt, changes) => {
+        Object.keys(changes).forEach(key => this.onFieldChange(koszt, key, changes[key]))
+    }
+
+    onFieldChange = (koszt, key, value) => {
+        console.log('Koszty.onFieldChange(' + key + ', ' + value + ')', key === 'real_value' || key === 'vat_value')
+        if (key === 'real_value' || key === 'vat_value') {
+            const real_value = isNaN(koszt.real_value) ? 0 : parseFloat(koszt.real_value)
+            const vat_value = isNaN(koszt.vat_value) ? 0 : parseFloat(koszt.vat_value)
+            koszt.kwota_obciazajaca_budzet = real_value + vat_value
+            //koszt[key] = value.toFixed(2)
+        }
+        if (key === 'kwota_obciazajaca_budzet') {
+            koszt.real_value = ''
+            koszt.vat_value = ''
+        }
     }
 
     dodajNowyKoszt = (faktura) => {

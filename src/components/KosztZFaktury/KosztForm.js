@@ -3,7 +3,6 @@ import { Form, Input, Checkbox, Button, Label } from 'semantic-ui-react'
 import ProjektSearch from './searchInputs/ProjektSearch'
 import ZadanieSearch from './searchInputs/ZadanieSearch'
 import BISearch from './searchInputs/BISearch'
-
 class KosztForm extends Component {
     constructor(props) {
         super(props);

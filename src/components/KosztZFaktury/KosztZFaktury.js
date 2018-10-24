@@ -1,8 +1,10 @@
 import React, { Component } from 'react'
-import { Form, Input, Button, Grid, Container, Header, Label, Tab } from 'semantic-ui-react'
+import { Form, Input, Button, Grid, Container, Header, Label, Icon, Tab, Menu } from 'semantic-ui-react'
+import { toast } from 'react-toastify'
 import './KosztZFaktury.css'
 import FakturaForm from './FakturaForm'
 import KosztForm from './KosztForm'
+import KosztyListaForm from './KosztyListaForm'
 import { FakturaPusta } from '../../modules/FakturaPusta'
 import { KosztyListaTest } from '../../modules/KosztyListaTest'
 import { Koszty } from '../../modules/Koszty'
@@ -40,13 +42,25 @@ class KosztZFaktury extends Component {
                             <KosztForm key={koszt.id} koszt={koszt} koszty={this.state.koszty} onKosztChange={this.handleKosztChange}
                                 onKosztSave={this.handleKosztSave}
                             />
+                            <KosztyListaForm koszty={this.state.koszty} />
                         </Tab.Pane> }
                 ))
             ,
-        // {
-        //     menuItem: 'dodaj nowy koszt...', render: () =>
-        //         <Tab.Pane>nowy koszt</Tab.Pane>
-        // },
+        {
+            menuItem: (
+                <Menu.Item key='messages'>
+                    <Button color='teal' icon labelPosition='left' disabled={!Faktura.isFakturaZapisana(this.state.faktura)}
+                        onClick={(evt) => this.nowyKoszt()}>
+                        <Icon name='add circle' />
+                        Dodaj koszt
+                </Button>
+                </Menu.Item>
+            ),
+            render: () =>
+                <Tab.Pane>
+                    Dodaj koszt
+                </Tab.Pane>
+        },
     ]
 
     handleFakturaChange = (changes) => {
@@ -63,12 +77,14 @@ class KosztZFaktury extends Component {
     handleKosztSave = (koszt) => {
         this.state.koszty.zapiszKoszt(koszt, koszty => {
                 this.setState({ koszty });
-            })
+            toast.success(<ToastMessage message={<span><em>Koszt zosał zapisany</em></span>} />);
+        })
     }
 
     handleFakturaSave = (faktura) => {
         Faktura.save(faktura, fakturaZapisana => {
             this.setState({ faktura: fakturaZapisana });
+            toast.success(<ToastMessage message={<span><em>Faktura zosała zapisana</em></span>} />);
         })
     }
 
@@ -105,7 +121,7 @@ class KosztZFaktury extends Component {
                                     />
                                 </Form.Field>
                                 <Form.Field inline>
-                                    <Input id='form-input-faktura_pozostalo' label='Pozostało' className='waluta' input="readonly='1'"
+                                    <Input id='form-input-faktura_pozostalo' label='Pozostało' className='waluta bold' input="readonly='1'"
                                         name="faktura_pozostalo" value={Faktura.fakturaPozostaloDoRozliczenia(faktura.wartosc_kwalfikowana, this.state.koszty.wartoscKwalfikowanaSuma())}
                                     />
                                 </Form.Field>
@@ -119,7 +135,7 @@ class KosztZFaktury extends Component {
                                         </Form.Field>
                                     )
                                 }
-                                <Button color='teal' 
+                                <Button color='teal' disabled={!Faktura.isFakturaZapisana(faktura)}
                                     onClick={(evt) => this.nowyKoszt()}>Nowy koszt</Button>
                             </Grid.Column>
                             {/*  disabled={!Faktura.isFakturaZapisana(faktura)} */}
@@ -134,6 +150,10 @@ class KosztZFaktury extends Component {
     }
 }
             
-            
+const ToastMessage = (props) => (
+    <div>
+        {props.message || ''}
+    </div>
+)            
             
 export default KosztZFaktury;

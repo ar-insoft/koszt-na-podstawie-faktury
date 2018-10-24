@@ -30,3 +30,7 @@
 .fontRed {
     color: red;
 }
+
+.ui.input.bold {
+    font-weight: bold;
+}

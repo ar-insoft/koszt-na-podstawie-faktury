@@ -12,6 +12,7 @@
     "axios": "^0.18.0",   
     "semantic-ui-css": "2.2.14",
     "semantic-ui-react": "^0.80.2",
+    "react-toastify": "^4.1.0",
     "lodash": "^4.17.10",
     "faker": "4.1.0"
   },
