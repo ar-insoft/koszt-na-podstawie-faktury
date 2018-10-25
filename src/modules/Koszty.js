@@ -1,3 +1,5 @@
+import Koszt from './Koszt'
+
 class Koszty {
     constructor(initList) {
         this.listaKosztow = initList
@@ -45,7 +47,7 @@ class Koszty {
     }
 
     dodajNowyKoszt = (faktura) => {
-        const nowyKoszt = { opis: 'nowy_koszt', rok_budzetowy: 2018, kwota_obciazajaca_budzet: 0.0, faktura_id: faktura.id, grupa_id: 1, }
+        const nowyKoszt = new Koszt(faktura.id)
         let nowyRozmiar = this.listaKosztow.push(nowyKoszt)
         nowyKoszt.id = - nowyRozmiar
         return this

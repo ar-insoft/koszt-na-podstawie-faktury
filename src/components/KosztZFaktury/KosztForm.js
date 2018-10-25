@@ -73,15 +73,21 @@ class KosztForm extends Component {
                         />
                     </Form.Group>
                     <Form.Group widths='equal'>
+                        <Label>Rok budżetowy</Label>
+                        <Input id='form-input-rok_budzetowy' placeholder='Rok budżetowy'
+                            name="rok_budzetowy" value={koszt.rok_budzetowy} onChange={this.handleChange}
+                        />
+                    </Form.Group>
+                    <Form.Group widths='equal'>
                         <Label>Opis</Label>
                         <Input id='form-input-opis' placeholder='Opis'
                             name="opis" value={koszt.opis} onChange={this.handleChange}
                         />
                     </Form.Group>
-                    <Button color='teal' fluid size='large' loading={isLoading} disabled={isLoading}
+                    <Button type='button' color='teal' fluid size='large' loading={isLoading} disabled={isLoading}
                         onClick={(evt) => this.props.onKosztSave(koszt)}>Zapisz</Button>
 
-                    {/* {Object.keys(koszt).map(key => key + ':' + koszt[key] + ', ')} */}
+                    {Object.keys(koszt).map(key => key + ':' + koszt[key] + ', ')}
                 </div>
             </React.Fragment>
         )

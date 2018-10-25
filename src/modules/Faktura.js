@@ -1,4 +1,9 @@
 class Faktura {
+    constructor() {
+        this.id = -1
+        this.forma_platnosci = '1'
+    }
+
     static save(faktura, promiseHandler) {
         const fakturaDoZapisu = { ...faktura }
         delete fakturaDoZapisu.firma

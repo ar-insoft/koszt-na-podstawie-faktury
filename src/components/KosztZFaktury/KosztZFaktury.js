@@ -14,7 +14,7 @@ class KosztZFaktury extends Component {
         super(props);
 
         this.state = {
-            faktura: { id: -1, }, //FakturaPusta, // 
+            faktura: new Faktura(), //{ id: -1, }, 
             koszty: new Koszty([]), // KosztyListaTest
             isLoading: false,
             tabActiveIndex: 0,
@@ -30,30 +30,32 @@ class KosztZFaktury extends Component {
         {
             menuItem: 'Faktura', render: () =>
                 <Tab.Pane>
-                    <FakturaForm isLoading={this.state.isLoading} faktura={this.state.faktura} onFakturaChange={this.handleFakturaChange}
-                        onFakturaSave={this.handleFakturaSave}
+                    <FakturaForm key='faktura' isLoading={this.state.isLoading} faktura={this.state.faktura}
+                        onFakturaChange={this.handleFakturaChange} onFakturaSave={this.handleFakturaSave}
                     />
                 </Tab.Pane>
         },
-            ...this.state.koszty.listaKosztow.map(koszt =>
-                Object.assign({ menuItem: koszt.opis }, {
-                    render: () =>
-                        <Tab.Pane>
-                            <KosztForm key={koszt.id} koszt={koszt} koszty={this.state.koszty} onKosztChange={this.handleKosztChange}
-                                onKosztSave={this.handleKosztSave}
-                            />
-                            <KosztyListaForm koszty={this.state.koszty} />
-                        </Tab.Pane> }
-                ))
-            ,
+        ...this.state.koszty.listaKosztow.map((koszt, index) => {
+            return ({
+                menuItem: 'Koszt ' + (index + 1),
+                render: () =>
+                    <Tab.Pane>
+                        <KosztForm key={koszt.id} koszt={koszt} koszty={this.state.koszty} onKosztChange={this.handleKosztChange}
+                            onKosztSave={this.handleKosztSave}
+                        />
+                        <KosztyListaForm koszty={this.state.koszty} />
+                    </Tab.Pane>
+            })
+        }),
         {
             menuItem: (
-                <Menu.Item key='messages'>
-                    <Button color='teal' icon labelPosition='left' disabled={!Faktura.isFakturaZapisana(this.state.faktura)}
-                        onClick={(evt) => this.nowyKoszt()}>
+                <Menu.Item key='dodaj_koszt'>
+                    <Button color='teal' icon labelPosition='left' type='button'
+                        onClick={this.nowyKoszt}>
                         <Icon name='add circle' />
                         Dodaj koszt
-                </Button>
+                    </Button>
+                        {/*  disabled={!Faktura.isFakturaZapisana(this.state.faktura)} */}
                 </Menu.Item>
             ),
             render: () =>
@@ -88,7 +90,11 @@ class KosztZFaktury extends Component {
         })
     }
 
-    nowyKoszt = () => {
+    nowyKoszt = (evt, data) => {
+        //if (evt.detail === 0) { // Fix buga: naciśnięcie Enter w Edit wywołuje ten handler
+        //    return;
+        //}
+        console.log('KosztZFaktury.nowyKoszt', evt, data)
         let koszty = this.state.koszty.dodajNowyKoszt(this.state.faktura)
         this.setState({ koszty, tabActiveIndex: this.state.koszty.listaKosztow.length });
     }
@@ -126,7 +132,7 @@ class KosztZFaktury extends Component {
                                     />
                                 </Form.Field>
                             </Grid.Column>
-                            <Grid.Column>
+                            {/* <Grid.Column>
                                 {
                                     this.state.koszty.listaKosztow.map(koszt =>
                                         <Form.Field inline key={koszt.id}>
@@ -137,8 +143,7 @@ class KosztZFaktury extends Component {
                                 }
                                 <Button color='teal' disabled={!Faktura.isFakturaZapisana(faktura)}
                                     onClick={(evt) => this.nowyKoszt()}>Nowy koszt</Button>
-                            </Grid.Column>
-                            {/*  disabled={!Faktura.isFakturaZapisana(faktura)} */}
+                            </Grid.Column> */}
                         </Grid.Row>
                     </Grid>
 

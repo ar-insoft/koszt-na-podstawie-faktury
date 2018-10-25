@@ -66,7 +66,7 @@ class FirmaSearch extends Component {
                     resultRenderer={resultRenderer}
                     minCharacters={3}
                 />
-                <Button icon onClick={this.addCompany}>
+                <Button icon onClick={this.addCompany} type='button'>
                     <Icon name='plus circle' />
                 </Button>
             </React.Fragment>

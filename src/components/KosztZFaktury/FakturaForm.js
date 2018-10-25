@@ -109,7 +109,7 @@ class FakturaForm extends Component {
                             name="opis" value={faktura.opis} onChange={this.handleChange}
                         />
                     </Form.Group>
-                    <Button color='teal' fluid size='large' disabled={isLoading || !Faktura.isPoprawnaDoZapisu(faktura)}
+                    <Button type='button' color='teal' fluid size='large' disabled={isLoading || !Faktura.isPoprawnaDoZapisu(faktura)}
                         loading={isLoading} onClick={(evt) => this.props.onFakturaSave(faktura)}>Zapisz</Button>
 
                     {/* {Object.keys(faktura).map(key => key + ':' + faktura[key] + ', ')} 
