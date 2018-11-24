@@ -5,25 +5,46 @@ import './KosztZFaktury.css'
 import FakturaForm from './FakturaForm'
 import KosztForm from './KosztForm'
 import KosztyListaForm from './KosztyListaForm'
-import { FakturaPusta } from '../../modules/FakturaPusta'
-import { KosztyListaTest } from '../../modules/KosztyListaTest'
 import { Koszty } from '../../modules/Koszty'
 import { Faktura } from '../../modules/Faktura'
+import DataProvider from '../../modules/DataProvider'
 class KosztZFaktury extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            faktura: new Faktura(), //{ id: -1, }, 
-            koszty: new Koszty([]), // KosztyListaTest
+            faktura: new Faktura(), 
+            koszty: new Koszty([]),
             isLoading: false,
             tabActiveIndex: 0,
+            dataProvider: {},
         }
     }
 
+    componentDidMount() {
+        this.setState({ dataProvider: new DataProvider() })
+        
+        const url = new URL(window.location)
+        const searchParams = new URLSearchParams(url.search)
+        const idFaktury = searchParams.get("id")
+        if (idFaktury > 0) {
+            this.wczytajDaneFaktury(idFaktury)
+        }
+    }
     componentDidUpdate(prevProps, prevState, snapshot) {
     }
-    componentDidMount() {
+
+    wczytajDaneFaktury = idFaktury => {
+        this.setState({ isLoading: true })
+        const dataHandler = (faktura, koszty) => {
+            this.setState({
+                faktura: Object.assign(this.state.faktura, faktura),
+                koszty: Object.assign(this.state.koszty, koszty),
+            })
+        }
+        const errorHandler = error => { console.log(error) }
+        const finallyHandler = () => { this.setState({ isLoading: false }) }
+        DataProvider.pobierzDaneFaktury(idFaktury, dataHandler, errorHandler, finallyHandler)
     }
 
     tabs = () => [
@@ -42,16 +63,27 @@ class KosztZFaktury extends Component {
                     <Tab.Pane>
                         <KosztForm key={koszt.id} koszt={koszt} koszty={this.state.koszty} onKosztChange={this.handleKosztChange}
                             onKosztSave={this.handleKosztSave}
+                            dataProvider={this.state.dataProvider}
                         />
-                        <KosztyListaForm koszty={this.state.koszty} />
+                        <KosztyListaForm koszty={this.state.koszty} onKosztDelete={this.handleKosztDelete}/>
                     </Tab.Pane>
             })
         }),
         {
             menuItem: (
-                <Menu.Item key='dodaj_koszt'>
+                <Menu.Item key='dodaj_koszt'
+                    disabled={
+                        !this.state.faktura.isFakturaZapisana() ||
+                        !this.state.koszty.moznaDodacNowyKoszt(this.state.faktura)
+                    }
+                >
                     <Button color='teal' icon labelPosition='left' type='button'
-                        onClick={this.nowyKoszt}>
+                        onClick={this.nowyKoszt}
+                        disabled={
+                            !this.state.faktura.isFakturaZapisana() ||
+                            !this.state.koszty.moznaDodacNowyKoszt(this.state.faktura)
+                        }
+                    >
                         <Icon name='add circle' />
                         Dodaj koszt
                     </Button>
@@ -67,8 +99,19 @@ class KosztZFaktury extends Component {
 
     handleFakturaChange = (changes) => {
         console.log('KosztZFaktury.handleFakturaChange', changes)
-        let faktura = Object.assign({ ...this.state.faktura }, changes);
-        this.setState({ faktura });
+        //let faktura = Object.assign({ ...this.state.faktura }, changes);
+        //this.setState({ faktura });
+        this.setState({ faktura: this.state.faktura.setter(changes) })
+    }
+
+    handleFakturaSave = (faktura) => {
+        Faktura.save(faktura, fakturaZapisana => {
+            this.setState({ faktura: fakturaZapisana });
+            toast.success(<ToastMessage message={<span><em>Faktura zosała zapisana</em></span>} />);
+        })
+    }
+
+    handleAnulujFakture = (faktura) => {
     }
 
     handleKosztChange = (koszt, changes) => {
@@ -83,18 +126,15 @@ class KosztZFaktury extends Component {
         })
     }
 
-    handleFakturaSave = (faktura) => {
-        Faktura.save(faktura, fakturaZapisana => {
-            this.setState({ faktura: fakturaZapisana });
-            toast.success(<ToastMessage message={<span><em>Faktura zosała zapisana</em></span>} />);
+    handleKosztDelete = (koszt) => {
+        this.state.koszty.usunKoszt(koszt, koszty => {
+            this.setState({ koszty, tabActiveIndex: 0 });
+            //toast.success(<ToastMessage message={<span><em>Koszt zosał usunięty</em></span>} />);
         })
     }
 
     nowyKoszt = (evt, data) => {
-        //if (evt.detail === 0) { // Fix buga: naciśnięcie Enter w Edit wywołuje ten handler
-        //    return;
-        //}
-        console.log('KosztZFaktury.nowyKoszt', evt, data)
+        //console.log('KosztZFaktury.nowyKoszt', evt, data)
         let koszty = this.state.koszty.dodajNowyKoszt(this.state.faktura)
         this.setState({ koszty, tabActiveIndex: this.state.koszty.listaKosztow.length });
     }
@@ -106,10 +146,10 @@ class KosztZFaktury extends Component {
 
     render() {
         const { faktura } = this.state;
-
+        console.log('KosztZFaktury::moznaDodacNowyKoszt '+this.state.koszty.moznaDodacNowyKoszt(this.state.faktura))
         return (
             <Container textAlign='center'>
-                <Form>
+                <Form autoComplete="off" loading={this.state.isLoading}>
                     <Header as='h2'>Rozliczenie kosztów na podstawie faktury</Header>
                     <Grid columns={2} divided>
                         <Grid.Row>
@@ -147,7 +187,7 @@ class KosztZFaktury extends Component {
                         </Grid.Row>
                     </Grid>
 
-                    <Tab panes={this.tabs()} activeIndex={this.state.tabActiveIndex} onTabChange={this.handleTabChange} />
+                    <Tab panes={this.tabs()} activeIndex={this.state.tabActiveIndex} onTabChange={this.handleTabChange} loading={this.state.loading} />
                 </Form>
             </Container>
         )

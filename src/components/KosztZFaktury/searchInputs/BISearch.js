@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Search } from 'semantic-ui-react'
+import { Search, Button, Icon } from 'semantic-ui-react'
 import _ from 'lodash'
 
 const biWszystkie = [
@@ -84,6 +84,11 @@ class BISearch extends Component {
             })
     }
 
+    handleUsunWybor = () => {
+        this.props.koszt.usunWyborBi()
+        this.props.onKosztChange(this.props.koszt, {})
+    }
+
     render() {
         const { isLoading, value, results } = this.state
         return (
@@ -95,7 +100,9 @@ class BISearch extends Component {
                     results={results}
                     value={value}
                     resultRenderer={resultRenderer}
-                /> {this.props.koszt.bi && this.props.koszt.bi.nieaktywny == "1" && <div className='fontRed'>nieaktywny Teta</div>}
+                />
+                <BiInfo bi={this.props.koszt.bi} handleUsunWybor={this.handleUsunWybor} />
+                
             </React.Fragment>
         )
     }
@@ -107,5 +114,21 @@ const resultRenderer = ({ id, numer, nazwa, nieaktywny }) => (
         {nieaktywny && <div className='fontRed'>nieaktywny Teta</div>}
     </div>
 )
+
+const BiInfo = (props) => {
+    if (props.bi) {
+        return <React.Fragment>
+            <div className='project_info'>
+                <span className='project_info_title'>{props.bi.numer}</span>
+                {props.bi.nazwa}
+                {props.bi.nieaktywny === "1" && <div className='fontRed'>nieaktywny Teta</div>}
+            </div>
+            <Button icon onClick={props.handleUsunWybor} type='button'>
+                <Icon name='delete' />
+            </Button>
+        </React.Fragment>
+    }
+    return <div className='project_info'>Nie wybrano BI</div>
+}
 
 export default BISearch

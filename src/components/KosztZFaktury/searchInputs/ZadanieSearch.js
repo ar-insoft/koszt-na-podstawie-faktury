@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Search } from 'semantic-ui-react'
+import { Search, Button, Icon } from 'semantic-ui-react'
 import _ from 'lodash'
 
 class ZadanieSearch extends Component {
@@ -29,6 +29,7 @@ class ZadanieSearch extends Component {
             if (this.state.value.length < 1) return this.resetComponent()
 
             const re = new RegExp(_.escapeRegExp(this.state.value), 'i')
+            // eslint-disable-next-line
             const isMatch = result => re.test(result.title)
 
             this.fetchZadaniaList()
@@ -54,9 +55,16 @@ class ZadanieSearch extends Component {
 
     }
 
+    handleUsunWybor = () => {
+        this.props.koszt.usunWyborZadania()
+        this.props.onKosztChange(this.props.koszt, {})
+    }
+
     render() {
         const { isLoading, value, results } = this.state
+        console.log('this.props.searchContext', this.props.searchContext)
         return (
+            <React.Fragment>
             <Search
                 loading={isLoading}
                 onResultSelect={this.handleResultSelect}
@@ -64,8 +72,14 @@ class ZadanieSearch extends Component {
                 results={results}
                 value={value}
                 resultRenderer={resultRenderer}
-            />
-        )
+                />
+                {/* <Button icon onClick={this.handleSearchButton}>
+                    <Icon name='search' />
+                </Button> */}
+                {this.props.searchContext && this.props.searchContext.fromContext()}
+                <ZadanieInfo zadanie={this.props.koszt.zadanie} handleUsunWybor={this.handleUsunWybor} />
+            </React.Fragment>
+         )
     }
 }
 const resultRenderer = ({ id, numer, nazwa }) => (
@@ -74,5 +88,20 @@ const resultRenderer = ({ id, numer, nazwa }) => (
         {nazwa && <span className='description'>{nazwa}</span>}
     </div>
 )
+
+const ZadanieInfo = (props) => {
+    if (props.zadanie) {
+        return <React.Fragment>
+            <div className='project_info'>
+                <span className='project_info_title'>{props.zadanie.numer}</span>
+                {props.zadanie.nazwa}
+            </div>
+            <Button icon onClick={props.handleUsunWybor} type='button'>
+                <Icon name='delete' />
+            </Button>
+        </React.Fragment>
+    }
+    return <div className='project_info'>Nie wybrano zadania</div>
+}
 
 export default ZadanieSearch

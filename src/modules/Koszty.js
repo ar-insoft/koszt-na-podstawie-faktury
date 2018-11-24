@@ -1,4 +1,5 @@
 import Koszt from './Koszt'
+import axios from 'axios'
 
 class Koszty {
     constructor(initList) {
@@ -9,7 +10,7 @@ class Koszty {
         //console.log('Koszty.wartoscKwalfikowanaSuma', this.listaKosztow)
         let sum = parseFloat(0)
         this.listaKosztow.forEach(element => {
-            console.log('el: ' + element.kwota_obciazajaca_budzet + ' ' + isNaN(element.kwota_obciazajaca_budzet))
+            //console.log('el: ' + element.kwota_obciazajaca_budzet + ' ' + isNaN(element.kwota_obciazajaca_budzet))
             sum += parseFloat(element.kwota_obciazajaca_budzet)
         });
         let suma = this.listaKosztow.reduce((a, b) => a.kwota_obciazajaca_budzet + b.kwota_obciazajaca_budzet, 0)
@@ -21,36 +22,85 @@ class Koszty {
     }
 
     aktualizujPoleKosztu = (koszt, changes) => {
-        console.log('Koszty.aktualizujPoleKosztu', this, changes)
         var kosztWLiscie = this.listaKosztow.find(el => el.id === koszt.id)
+        console.log('Koszty.aktualizujPoleKosztu', koszt, kosztWLiscie, changes)
         Object.assign(kosztWLiscie, changes);
         this.obserwujZmiany(kosztWLiscie, changes)
         return this
     }
 
     obserwujZmiany = (koszt, changes) => {
-        Object.keys(changes).forEach(key => this.onFieldChange(koszt, key, changes[key]))
+        Object.keys(changes).forEach(key => koszt.onFieldChange(key, changes[key]))
     }
 
-    onFieldChange = (koszt, key, value) => {
-        console.log('Koszty.onFieldChange(' + key + ', ' + value + ')', key === 'real_value' || key === 'vat_value')
-        if (key === 'real_value' || key === 'vat_value') {
-            const real_value = isNaN(koszt.real_value) ? 0 : parseFloat(koszt.real_value)
-            const vat_value = isNaN(koszt.vat_value) ? 0 : parseFloat(koszt.vat_value)
-            koszt.kwota_obciazajaca_budzet = real_value + vat_value
-            //koszt[key] = value.toFixed(2)
+    usunKoszt = (koszt, promiseHandler) => {
+        const functionPominUsuniety = (el) => el.id !== koszt.id
+        const akcjaPoUsunieciu = () => {
+            this.listaKosztow = this.listaKosztow.filter(functionPominUsuniety)
+            promiseHandler(this)
         }
-        if (key === 'kwota_obciazajaca_budzet') {
-            koszt.real_value = ''
-            koszt.vat_value = ''
+
+        if (koszt.isSaved()) {
+            koszt.delete(akcjaPoUsunieciu)
+        } else {
+            akcjaPoUsunieciu()
         }
     }
 
+    moznaDodacNowyKoszt = (faktura) => {
+        const pozostaloDoRozliczenia = faktura.wartosc_kwalfikowana - this.wartoscKwalfikowanaSuma()
+        console.log('Koszty.moznaDodacNowyKoszt::pozostaloDoRozliczenia ' + pozostaloDoRozliczenia + ' ' + (pozostaloDoRozliczenia <= 0))
+        if (pozostaloDoRozliczenia <= 0) return false
+        const wszystkieKosztyZapisane = this.listaKosztow.every(koszt => koszt.isSaved)
+        console.log('Koszty.moznaDodacNowyKoszt::wszystkieKosztyZapisane ' + wszystkieKosztyZapisane)
+        if (!wszystkieKosztyZapisane) return false
+        return true
+    }
     dodajNowyKoszt = (faktura) => {
-        const nowyKoszt = new Koszt(faktura.id)
+        let initialFields = {
+            faktura_id: faktura.id,
+            rok_budzetowy: faktura.rok_budzetowy,
+            domyslnaWartosc: faktura.wartosc_kwalfikowana - this.wartoscKwalfikowanaSuma(),
+        }
+        const ostatniKoszt = this.listaKosztow.length > 0 ? this.listaKosztow[this.listaKosztow.length - 1] : null
+        if (ostatniKoszt) {
+            Object.assign(initialFields, {
+                id_zlecenie: ostatniKoszt.id_zlecenie,
+                projekt: ostatniKoszt.projekt,
+                koszt_teta_parent_id: ostatniKoszt.koszt_teta_parent_id,
+                zadanie: ostatniKoszt.zadanie,
+            })
+        }
+        //const nowyKoszt = new Koszt(faktura.id, faktura.wartosc_kwalfikowana - this.wartoscKwalfikowanaSuma())
+        const nowyKoszt = new Koszt(initialFields)
         let nowyRozmiar = this.listaKosztow.push(nowyKoszt)
         nowyKoszt.id = - nowyRozmiar
         return this
+    }
+
+    static pobierzListeKosztowAxios(idFaktury) {
+        return axios.get('/eoffice/budzety_pwr/budzet_pwr_json_endpoint.xml', {
+            headers: { 'Content-Type': 'application/json', responseEncoding: 'utf8', },
+            params: {
+                action: 'koszty_faktury',
+                id: idFaktury
+            },
+            transformResponse: [(data) => {
+                console.log('Koszty.pobierzListeKosztowAxios '+ typeof data, data)
+                // Do whatever you want to transform the data
+                const kosztyDb = JSON.parse(data)
+                const listaKosztow = kosztyDb.map(x => Object.assign(new Koszt({}), x))
+                return new Koszty(listaKosztow)
+            }],
+        })
+
+        // `transformResponse` allows changes to the response data to be made before
+        // it is passed to then/catch
+//        transformResponse: [function (data) {
+            // Do whatever you want to transform the data
+
+//            return data;
+//        }],
     }
 
     zapiszKoszt = (koszt, promiseHandler) => {
@@ -77,7 +127,6 @@ class Koszty {
             })
             .then(json => {
                 const kosztZapisany = json
-                console.log('koszty.zapiszKoszt kosztZapisany', kosztZapisany)
                 Object.assign(kosztWLiscie, kosztZapisany);
 
                 promiseHandler(this)

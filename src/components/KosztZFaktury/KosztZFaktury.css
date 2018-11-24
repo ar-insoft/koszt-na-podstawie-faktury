@@ -9,10 +9,34 @@
 .ui.input.waluta input {
     text-align: right;
 }
+.ui.error.input input {
+    /* background-color: #e0b4b4; */
+    border-color: #e0b4b4;
+}
+
+div.project_info {
+    max-width: 500px;
+    height: 38px;
+    padding: 0px 10px;
+    overflow: hidden;
+}
+.project_info_title {
+    font-weight: bold;
+    padding: 0px 3px 0 0;
+}
+
+.ui.form .input.podwojna_szerokosc {
+    width: 400px;
+}
 
 .ui.form input.currency {
     text-align: right;
     width: 200px;
+}
+
+.verticalAlignMiddle {
+    vertical-align: middle;
+    padding: 5px 10px;
 }
 
 .ui.search>.results.transition.visible {
