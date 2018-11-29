@@ -41,6 +41,7 @@ class ProjektSearch extends Component {
     handleResultSelect = (e, { result }) => {
         this.props.onKosztChange(this.props.koszt, { id_zlecenie: result.id, projekt: result });
         this.setState({ value: result.object_index }) // + ' ' + result.object_external_index 
+        this.props.searchContext.search({ value: result.id })
     }
     handleSearchButton = (e, data) => {
         console.log(this.searchRef.current)

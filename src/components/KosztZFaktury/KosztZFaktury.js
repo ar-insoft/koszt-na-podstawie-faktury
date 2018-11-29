@@ -7,7 +7,8 @@ import KosztForm from './KosztForm'
 import KosztyListaForm from './KosztyListaForm'
 import { Koszty } from '../../modules/Koszty'
 import { Faktura } from '../../modules/Faktura'
-import DataProvider from '../../modules/DataProvider'
+import DataProviderAxios from '../../modules/DataProviderAxios'
+
 class KosztZFaktury extends Component {
     constructor(props) {
         super(props);
@@ -22,7 +23,7 @@ class KosztZFaktury extends Component {
     }
 
     componentDidMount() {
-        this.setState({ dataProvider: new DataProvider() })
+        this.setState({ dataProvider: new DataProviderAxios() })
         
         const url = new URL(window.location)
         const searchParams = new URLSearchParams(url.search)
@@ -42,9 +43,12 @@ class KosztZFaktury extends Component {
                 koszty: Object.assign(this.state.koszty, koszty),
             })
         }
-        const errorHandler = error => { console.log(error) }
+        const errorHandler = error => {
+            console.log(error)
+            toast.error(<ToastMessage message={<span><em>Nie udało się odczytać faktury</em></span>} />)
+        }
         const finallyHandler = () => { this.setState({ isLoading: false }) }
-        DataProvider.pobierzDaneFaktury(idFaktury, dataHandler, errorHandler, finallyHandler)
+        DataProviderAxios.pobierzDaneFaktury(idFaktury, dataHandler, errorHandler, finallyHandler)
     }
 
     tabs = () => [
@@ -104,10 +108,28 @@ class KosztZFaktury extends Component {
         this.setState({ faktura: this.state.faktura.setter(changes) })
     }
 
-    handleFakturaSave = (faktura) => {
-        Faktura.save(faktura, fakturaZapisana => {
-            this.setState({ faktura: fakturaZapisana });
+    handleFakturaSave = (faktura) => { //Axios
+        this.setState({ isLoading: true })
+        const dataHandler = (faktura) => {
+            this.setState({ faktura: Object.assign(this.state.faktura, faktura), })
             toast.success(<ToastMessage message={<span><em>Faktura zosała zapisana</em></span>} />);
+        }
+        const errorHandler = error => {
+            console.log(error)
+            toast.error(<ToastMessage message={<span><em>Nie udało się zapisać faktury</em></span>} />)
+        }
+        const finallyHandler = () => { this.setState({ isLoading: false }) }
+        DataProviderAxios.zapiszFakture(faktura, dataHandler, errorHandler, finallyHandler)
+    }
+    handleFakturaSaveFetch = (faktura) => { //Fetch
+        this.setState({ isLoading: true })
+
+        Faktura.save(faktura, fakturaZapisana => {
+            this.setState({ faktura: fakturaZapisana, isLoading: false });
+            toast.success(<ToastMessage message={<span><em>Faktura zosała zapisana</em></span>} />);
+        }, error => {
+            toast.error(<ToastMessage message={<span><em>Nie udało się zapisać faktury {error}</em></span>} />)
+            this.setState({ isLoading: false });
         })
     }
 
@@ -120,16 +142,24 @@ class KosztZFaktury extends Component {
     }
 
     handleKosztSave = (koszt) => {
+        this.setState({ isLoading: true })
         this.state.koszty.zapiszKoszt(koszt, koszty => {
-                this.setState({ koszty });
+            this.setState({ koszty, isLoading: false });
             toast.success(<ToastMessage message={<span><em>Koszt zosał zapisany</em></span>} />);
+        }, error => {
+            toast.error(<ToastMessage message={<span><em>Nie udało się zapisać kosztu {error}</em></span>} />)
+            this.setState({ isLoading: false });
         })
     }
 
     handleKosztDelete = (koszt) => {
+        this.setState({ isLoading: true })
         this.state.koszty.usunKoszt(koszt, koszty => {
-            this.setState({ koszty, tabActiveIndex: 0 });
-            //toast.success(<ToastMessage message={<span><em>Koszt zosał usunięty</em></span>} />);
+            this.setState({ koszty, tabActiveIndex: 0, isLoading: false });
+            toast.success(<ToastMessage message={<span><em>Koszt zosał usunięty</em></span>} />);
+        }, error => {
+            toast.error(<ToastMessage message={<span><em>Nie udało się usunąć kosztu {error}</em></span>} />)
+            this.setState({ isLoading: false });
         })
     }
 
@@ -146,7 +176,6 @@ class KosztZFaktury extends Component {
 
     render() {
         const { faktura } = this.state;
-        console.log('KosztZFaktury::moznaDodacNowyKoszt '+this.state.koszty.moznaDodacNowyKoszt(this.state.faktura))
         return (
             <Container textAlign='center'>
                 <Form autoComplete="off" loading={this.state.isLoading}>

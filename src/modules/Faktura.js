@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import axios from 'axios'
+import Walidator from './Walidator'
 
 class Faktura {
     constructor() {
@@ -32,13 +33,28 @@ class Faktura {
         if (typeof _.get(this, 'fields[' + field + '].valid') === 'function') {
             return _.get(this, 'fields[' + field + '].valid')(this[field])
         }
-        //_.get(this, 'fields[field].valid')(this[field])
         return true
-        //_.get(this, 'fields[' + field + '].valid(' + this[field] + ')', true)
+    }
+
+    validWraper = (field) => {
+        const res = this.isFieldValid(field)
+        console.log('Faktura.validWraper ['+field+'] '+ res)
+        return res
+    }
+
+    isValid = () => {
+        return Object.keys(this.fields).every((field) => this.isFieldValid(field))
     }
 
     isFakturaZapisana = () => {
         return this.id > 0
+    }
+
+    fakturaDoZapisu = () => {
+        const fakturaDoZapisu = { ...this }
+        delete fakturaDoZapisu.firma
+        delete fakturaDoZapisu.fields
+        return fakturaDoZapisu
     }
 
     static readAxios(id) {
@@ -50,10 +66,8 @@ class Faktura {
             }
         })
     }
-    static save(faktura, promiseHandler) {
-        const fakturaDoZapisu = { ...faktura }
-        delete fakturaDoZapisu.firma
-        const fakturaJson = JSON.stringify(fakturaDoZapisu)
+    static save(faktura, promiseHandler, errorHandler) {
+        const fakturaJson = JSON.stringify(faktura.fakturaDoZapisu())
 
         fetch('/eoffice/budzety_pwr/budzet_pwr_json_endpoint.xml?action=save_faktura', {
             method: 'POST',
@@ -70,19 +84,24 @@ class Faktura {
                 return response.json()
             })
             .then(json => {
+                if (json.is_request_successful === false) {
+                    return Promise.reject(json.error_message)
+                }
                 const fakturaZapisana = json
                 console.log('Faktura.save fakturaZapisana', fakturaZapisana)
                 Object.assign(faktura, fakturaZapisana);
 
                 promiseHandler(faktura)
             })
+            .catch(error => errorHandler(error))
     }
 
     static isPoprawnaDoZapisu(faktura) {
-        let valid = true
-        const wypelnonaWartoscKwalfikowana = !isNaN(faktura.wartosc_kwalfikowana) && faktura.wartosc_kwalfikowana > 0
-        valid = valid && wypelnonaWartoscKwalfikowana
-        return valid
+        return faktura.isValid()
+        // let valid = true
+        // const wypelnonaWartoscKwalfikowana = !isNaN(faktura.wartosc_kwalfikowana) && faktura.wartosc_kwalfikowana > 0
+        // valid = valid && wypelnonaWartoscKwalfikowana
+        // return valid
     }
 
     static fakturaPozostaloDoRozliczenia(doRozliczenia, rozliczono) {
@@ -95,9 +114,18 @@ class Faktura {
 }
 
 const FakturaDef = {
+    nr_faktury: {
+        valid: (fieldValue) => Walidator.isNotBlank(fieldValue)
+    },
+    przedmiot: {
+        valid: (fieldValue) => Walidator.isNotBlank(fieldValue)
+    },
+    data_wystawienia: {
+        valid: (fieldValue) => Walidator.isNotBlank(fieldValue)
+    },
     wartosc_kwalfikowana: {
         valid: (fieldValue) => fieldValue > 0
-    }
+    },
 }
 
 export { Faktura }

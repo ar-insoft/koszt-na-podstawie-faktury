@@ -2,9 +2,10 @@ import React, { Component } from 'react'
 import { Form, Input, Search, Button, Label, Icon } from 'semantic-ui-react'
 import _ from 'lodash'
 //import DataProvider from '../../../modules/DataProvider'
-import ProjektSearch from './searchInputs/ProjektSearch'
-import ZadanieSearch from './searchInputs/ZadanieSearch'
-import BISearch from './searchInputs/BISearch'
+import ProjektSearch from './ProjektSearch'
+import ZadanieSearch from './ZadanieSearch'
+import BISearch from './BISearch'
+import { SearchContext, SearchContextImplementation } from './SearchContext'
 
 class SearchFields extends Component {
     constructor(props) {
@@ -24,19 +25,32 @@ class SearchFields extends Component {
         const { koszt } = this.props
         return (
             <React.Fragment>
+                <SearchContext.Provider value={new SearchContextImplementation()} >
                 <Form.Group widths='equal'>
                     <Label>Projekt</Label>
-                    <ProjektSearch koszt={koszt} onKosztChange={this.props.onKosztChange} dataProvider={this.props.dataProvider} />
+                    <SearchContext.Consumer>
+                        {searchContext => (
+                            <ProjektSearch koszt={koszt} onKosztChange={this.props.onKosztChange}
+                                dataProvider={this.props.dataProvider} searchContext={searchContext} />
+                        )}
+                    </SearchContext.Consumer>
                 </Form.Group>
                 <Form.Group widths='equal'>
                     <Label>Zadanie</Label>
                     <ZadanieSearch projectId={koszt.id_zlecenie} koszt={koszt} onKosztChange={this.props.onKosztChange}
                         dataProvider={this.props.dataProvider} />
+                    <SearchContext.Consumer>
+                        {searchContext => (
+                            <ZadanieSearch projectId={koszt.id_zlecenie} koszt={koszt} onKosztChange={this.props.onKosztChange}
+                                dataProvider={this.props.dataProvider} searchContext={searchContext} />
+                        )}
+                    </SearchContext.Consumer>
                 </Form.Group>
                 <Form.Group widths='equal'>
                     <Label>Koszt BI</Label>
                     <BISearch koszt={koszt} onKosztChange={this.props.onKosztChange} dataProvider={this.props.dataProvider} />
                 </Form.Group>
+                </SearchContext.Provider>
             </React.Fragment>
         )
     }

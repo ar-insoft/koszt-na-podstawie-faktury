@@ -4,13 +4,13 @@ import axios from 'axios'
 import { Koszty } from './Koszty'
 import { Faktura } from './Faktura'
 
-class DataProvider {
+class DataProviderAxios {
     constructor() {
         //this.projectListObservable = Observable.fromPromise(DataProvider.projectList())
         //this.projectListObservable = from(DataProvider.projectListPromise())
         //console.log('DataProvider.constructor', interval)
 
-        DataProvider.processRequest(DataProvider.projectListPromise(), projectList => { this.projectListObservable = from(projectList) })
+        DataProviderAxios.processRequest(DataProviderAxios.projectListPromise(), projectList => { this.projectListObservable = from(projectList) })
         
         var numbers = of(10, 20, 30);
         var letters = of('a', 'b', 'c');
@@ -40,6 +40,63 @@ class DataProvider {
                 finallyHandler()
             })
     }
+
+    /**
+     * Zapisywanie faktury
+     * @param {object} faktura faktura do zapisu
+     * @param {function} dataHandler function (faktura:Faktura) {// handle success }
+     * @param {function} errorHandler function (error) {// handle error }
+     * @param {function} finallyHandler function () {// always executed }
+     */
+    static zapiszFakture = (faktura, dataHandler, errorHandler, finallyHandler) => {
+        const fakturaDoZapisu = faktura.fakturaDoZapisu()
+        const fakturaJson = JSON.stringify(fakturaDoZapisu)
+
+        // axios({
+        //     method: 'post',
+        //     url: '/eoffice/budzety_pwr/budzet_pwr_json_endpoint.xml?action=save_faktura',
+        //      headers: {
+        //          'Content-Type': 'application/x-www-form-urlencoded',
+        //          responseEncoding: 'utf8'
+        //     },
+        //     data: //fakturaJson
+        //     {
+        //         //'faktura': fakturaJson,
+        //         test: 'tewsowe'
+        //     }
+        // })
+        axios.post('/eoffice/budzety_pwr/budzet_pwr_json_endpoint.xml?action=save_faktura',
+            //JSON.stringify({ faktura: fakturaDoZapisu })
+            { faktura: fakturaDoZapisu }
+            , {
+            headers: {
+                //'Content-Type': 'application/x-www-form-urlencoded',
+                responseEncoding: 'utf8'
+            }
+        })
+            .then(({ data }) => {
+                console.log('DataProvider.zapiszFakture ' + (data.is_request_successful === false),data)
+                if (data.is_request_successful === false)
+                    return Promise.reject(data.error_message)
+                dataHandler(data)
+            })
+            .catch((error) => {
+                // handle error
+                errorHandler(error);
+            })
+            .then(() => {
+                // always executed
+                finallyHandler()
+            })
+        // fetch('/eoffice/budzety_pwr/budzet_pwr_json_endpoint.xml?action=save_faktura', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/x-www-form-urlencoded' //'Content-Type': 'application/json' 
+        //         , responseEncoding: 'utf8'
+        //     },
+        //     body: 'faktura=' + fakturaJson
+        // })
+     }
 
     static projectListPromise = () => {
         const url = '/eoffice/budzety_pwr/budzet_pwr_json_endpoint.xml?action=koszty_pwr_szukanie_projektu'
@@ -76,4 +133,4 @@ class DataProvider {
     }
 }
 
-export default DataProvider
+export default DataProviderAxios

@@ -35,7 +35,10 @@ const KosztyListaForm = (props) => {
                     return (
                         <Table.Row key={koszt.id}>
                             <Table.Cell>
-                                Koszt {koszt.last_change_timestamp || 'niezapisany'}
+                                <span style={{ fontWeight: 'bold', marginRight: 5+'px' }}>
+                                    Koszt {props.koszty.indeksKosztuWLiscie(koszt.id) + 1}
+                                </span>                                
+                                {koszt.last_change_timestamp || 'niezapisany'}
                             </Table.Cell>
                             <Table.Cell>
                                 {koszt.projekt && koszt.projekt.object_index}

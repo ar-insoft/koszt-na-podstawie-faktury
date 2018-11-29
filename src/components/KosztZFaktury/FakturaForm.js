@@ -89,14 +89,16 @@ class FakturaForm extends Component {
                         <Form.Group widths='equal'>
                             <Label>Nr faktury</Label>
                             <Input id='form-input-nr_faktury' placeholder='Nr faktury'
-                                name="nr_faktury" value={faktura.nr_faktury} onChange={this.handleChange}
+                            name="nr_faktury" value={faktura.nr_faktury} onChange={this.handleChange}
+                            error={!faktura.isFieldValid("nr_faktury")}
                             />
                         </Form.Group>}
                     {sekcjaGotowka &&
                         <Form.Group widths='equal'>
                             <Label>Data wystawienia</Label>
                             <Input id='form-input-data_wystawienia' type='date'
-                                name="data_wystawienia" value={faktura.data_wystawienia} onChange={this.handleChange}
+                            name="data_wystawienia" value={faktura.data_wystawienia} onChange={this.handleChange}
+                            error={!faktura.isFieldValid("data_wystawienia")}
                             />
                         </Form.Group>}
                    <Form.Group widths='equal'>
@@ -184,7 +186,7 @@ class FakturaForm extends Component {
                     <Button type='button' color='teal' fluid size='large' disabled={isLoading || !Faktura.isPoprawnaDoZapisu(faktura)}
                         loading={isLoading} onClick={(evt) => this.props.onFakturaSave(faktura)}>Zapisz</Button>
 
-                    {Object.keys(faktura).filter(key => typeof (faktura[key]) !== 'function').map(key => key + ':' + faktura[key] + ', ')}
+                    {/* {Object.keys(faktura).filter(key => typeof (faktura[key]) !== 'function').map(key => key + ':' + faktura[key] + ', ')} */}
                 </div>
             </React.Fragment>
         )

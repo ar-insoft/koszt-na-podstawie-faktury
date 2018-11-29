@@ -33,7 +33,12 @@ class Koszty {
         Object.keys(changes).forEach(key => koszt.onFieldChange(key, changes[key]))
     }
 
-    usunKoszt = (koszt, promiseHandler) => {
+    indeksKosztuWLiscie = (idKosztu) => {
+        var kosztWLiscie = this.listaKosztow.find(el => el.id === idKosztu)
+        return this.listaKosztow.indexOf(kosztWLiscie)
+    }
+
+    usunKoszt = (koszt, promiseHandler, errorHandler) => {
         const functionPominUsuniety = (el) => el.id !== koszt.id
         const akcjaPoUsunieciu = () => {
             this.listaKosztow = this.listaKosztow.filter(functionPominUsuniety)
@@ -49,10 +54,10 @@ class Koszty {
 
     moznaDodacNowyKoszt = (faktura) => {
         const pozostaloDoRozliczenia = faktura.wartosc_kwalfikowana - this.wartoscKwalfikowanaSuma()
-        console.log('Koszty.moznaDodacNowyKoszt::pozostaloDoRozliczenia ' + pozostaloDoRozliczenia + ' ' + (pozostaloDoRozliczenia <= 0))
+        //console.log('Koszty.moznaDodacNowyKoszt::pozostaloDoRozliczenia ' + pozostaloDoRozliczenia + ' ' + (pozostaloDoRozliczenia <= 0))
         if (pozostaloDoRozliczenia <= 0) return false
         const wszystkieKosztyZapisane = this.listaKosztow.every(koszt => koszt.isSaved)
-        console.log('Koszty.moznaDodacNowyKoszt::wszystkieKosztyZapisane ' + wszystkieKosztyZapisane)
+        //console.log('Koszty.moznaDodacNowyKoszt::wszystkieKosztyZapisane ' + wszystkieKosztyZapisane)
         if (!wszystkieKosztyZapisane) return false
         return true
     }
@@ -103,9 +108,8 @@ class Koszty {
 //        }],
     }
 
-    zapiszKoszt = (koszt, promiseHandler) => {
+    zapiszKoszt = (koszt, promiseHandler, errorHandler) => {
         var kosztWLiscie = this.listaKosztow.find(el => el.id === koszt.id)
-        console.log('Koszty.zapiszKoszt', kosztWLiscie)
         const kosztDoZapisu = { ...kosztWLiscie }
         delete kosztDoZapisu.projekt
         delete kosztDoZapisu.zadanie
@@ -131,6 +135,7 @@ class Koszty {
 
                 promiseHandler(this)
             })
+            .catch(error => errorHandler(error))
     }
 
 }
