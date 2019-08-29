@@ -5,17 +5,17 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "react": "^16.5.2",
-    "react-dom": "^16.5.2",
-    "react-scripts": "2.0.4",
-    "react-router-dom": "^4.3.1",
-    "axios": "^0.18.0",
-    "semantic-ui-css": "2.2.14",
-    "semantic-ui-react": "^0.80.2",
-    "react-toastify": "^4.1.0",
-    "lodash": "^4.17.10",
+    "axios": "^0.19.0",
+    "faker": "4.1.0",
+    "lodash": "^4.17.15",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-router-dom": "^5.0.1",
+    "react-scripts": "3.1.1",
+    "react-toastify": "^5.3.2",
     "rxjs": "^6.3.3",
-    "faker": "4.1.0"
+    "semantic-ui-css": "2.4.1",
+    "semantic-ui-react": "^0.88.0"
   },
   "scripts": {
     "start": "react-scripts start",
