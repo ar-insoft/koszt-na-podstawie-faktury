@@ -7,7 +7,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "faker": "4.1.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-router-dom": "^5.0.1",
